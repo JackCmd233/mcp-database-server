@@ -186,7 +186,7 @@ export class SqlServerAdapter implements DbAdapter {
       SELECT 
         c.COLUMN_NAME as name,
         c.DATA_TYPE as type,
-        CASE WHEN c.IS_NULLABLE = 'YES' THEN 1 ELSE 0 END as notnull,
+        CASE WHEN c.IS_NULLABLE = 'NO' THEN 1 ELSE 0 END as notnull,
         CASE WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN 1 ELSE 0 END as pk,
         c.COLUMN_DEFAULT as dflt_value
       FROM 

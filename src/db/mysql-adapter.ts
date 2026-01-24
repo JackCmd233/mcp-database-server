@@ -211,6 +211,21 @@ export class MysqlAdapter implements DbAdapter {
    * Get database-specific query for describing a table
    */
   getDescribeTableQuery(tableName: string): string {
-    return `DESCRIBE \`${tableName}\``;
+    // MySQL DESCRIBE returns columns with different names, so we use a query that matches the expected format
+    return `
+      SELECT
+        COLUMN_NAME as name,
+        DATA_TYPE as type,
+        CASE WHEN IS_NULLABLE = 'NO' THEN 1 ELSE 0 END as notnull,
+        CASE WHEN COLUMN_KEY = 'PRI' THEN 1 ELSE 0 END as pk,
+        COLUMN_DEFAULT as dflt_value
+      FROM
+        INFORMATION_SCHEMA.COLUMNS
+      WHERE
+        TABLE_NAME = '${tableName}'
+        AND TABLE_SCHEMA = '${this.database}'
+      ORDER BY
+        ORDINAL_POSITION
+    `;
   }
 } 
