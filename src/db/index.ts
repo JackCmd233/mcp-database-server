@@ -1,24 +1,24 @@
 import { DbAdapter, createDbAdapter } from './adapter.js';
 
-// Store the active database adapter
+// 存储活动的数据库适配器
 let dbAdapter: DbAdapter | null = null;
 
 /**
- * Initialize the database connection
- * @param connectionInfo Connection information object or SQLite path string
- * @param dbType Database type ('sqlite' or 'sqlserver')
+ * 初始化数据库连接
+ * @param connectionInfo 连接信息对象或 SQLite 路径字符串
+ * @param dbType 数据库类型 ('sqlite' 或 'sqlserver')
  */
 export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite'): Promise<void> {
   try {
-    // If connectionInfo is a string, assume it's a SQLite path
+    // 如果 connectionInfo 是字符串,则假定它是 SQLite 路径
     if (typeof connectionInfo === 'string') {
       connectionInfo = { path: connectionInfo };
     }
 
-    // Create appropriate adapter based on database type
+    // 根据数据库类型创建相应的适配器
     dbAdapter = createDbAdapter(dbType, connectionInfo);
-    
-    // Initialize the connection
+
+    // 初始化连接
     await dbAdapter.init();
   } catch (error) {
     throw new Error(`Failed to initialize database: ${(error as Error).message}`);
@@ -26,10 +26,10 @@ export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite
 }
 
 /**
- * Execute a SQL query and get all results
- * @param query SQL query to execute
- * @param params Query parameters
- * @returns Promise with query results
+ * 执行 SQL 查询并获取所有结果
+ * @param query 要执行的 SQL 查询
+ * @param params 查询参数
+ * @returns 包含查询结果的 Promise
  */
 export function dbAll(query: string, params: any[] = []): Promise<any[]> {
   if (!dbAdapter) {
@@ -39,10 +39,10 @@ export function dbAll(query: string, params: any[] = []): Promise<any[]> {
 }
 
 /**
- * Execute a SQL query that modifies data
- * @param query SQL query to execute
- * @param params Query parameters
- * @returns Promise with result info
+ * 执行修改数据的 SQL 查询
+ * @param query 要执行的 SQL 查询
+ * @param params 查询参数
+ * @returns 包含结果信息的 Promise
  */
 export function dbRun(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
   if (!dbAdapter) {
@@ -52,9 +52,9 @@ export function dbRun(query: string, params: any[] = []): Promise<{ changes: num
 }
 
 /**
- * Execute multiple SQL statements
- * @param query SQL statements to execute
- * @returns Promise that resolves when execution completes
+ * 执行多条 SQL 语句
+ * @param query 要执行的 SQL 语句
+ * @returns 执行完成后解析的 Promise
  */
 export function dbExec(query: string): Promise<void> {
   if (!dbAdapter) {
@@ -64,7 +64,7 @@ export function dbExec(query: string): Promise<void> {
 }
 
 /**
- * Close the database connection
+ * 关闭数据库连接
  */
 export function closeDatabase(): Promise<void> {
   if (!dbAdapter) {
@@ -74,7 +74,7 @@ export function closeDatabase(): Promise<void> {
 }
 
 /**
- * Get database metadata
+ * 获取数据库元数据
  */
 export function getDatabaseMetadata(): { name: string, type: string, path?: string, server?: string, database?: string } {
   if (!dbAdapter) {
@@ -84,7 +84,7 @@ export function getDatabaseMetadata(): { name: string, type: string, path?: stri
 }
 
 /**
- * Get database-specific query for listing tables
+ * 获取列出表的数据库特定查询
  */
 export function getListTablesQuery(): string {
   if (!dbAdapter) {
@@ -94,8 +94,8 @@ export function getListTablesQuery(): string {
 }
 
 /**
- * Get database-specific query for describing a table
- * @param tableName Table name
+ * 获取描述表的数据库特定查询
+ * @param tableName 表名
  */
 export function getDescribeTableQuery(tableName: string): string {
   if (!dbAdapter) {
