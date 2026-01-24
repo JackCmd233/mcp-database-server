@@ -1,61 +1,61 @@
-# PostgreSQL Setup for MCP Database Server
+# MCP 数据库服务器的 PostgreSQL 设置
 
-This document describes how to set up and use the PostgreSQL adapter with the MCP Database Server.
+本文档描述了如何设置和使用 PostgreSQL 适配器与 MCP 数据库服务器。
 
-## Prerequisites
+## 前提条件
 
-1. You need to have PostgreSQL installed and running on your system or on a remote server.
-2. Ensure the pg package is installed:
+1. 您需要在系统或远程服务器上安装并运行 PostgreSQL。
+2. 确保安装了 pg 包:
 
 ```
 npm install pg
 npm install @types/pg --save-dev
 ```
 
-## Running the Server with PostgreSQL
+## 使用 PostgreSQL 运行服务器
 
-To connect to a PostgreSQL database, use the following command-line arguments:
+要连接到 PostgreSQL 数据库,请使用以下命令行参数:
 
 ```bash
-# Basic connection
+# 基本连接
 node dist/src/index.js --postgresql --host localhost --database yourdb --user postgres --password yourpassword
 
-# With custom port (default is 5432)
+# 使用自定义端口(默认为 5432)
 node dist/src/index.js --postgresql --host localhost --database yourdb --user postgres --password yourpassword --port 5433
 
-# With SSL enabled
+# 启用 SSL
 node dist/src/index.js --postgresql --host localhost --database yourdb --user postgres --password yourpassword --ssl true
 
-# With custom connection timeout (in milliseconds)
+# 使用自定义连接超时(以毫秒为单位)
 node dist/src/index.js --postgresql --host localhost --database yourdb --user postgres --password yourpassword --connection-timeout 60000
 ```
 
-## Command Line Arguments
+## 命令行参数
 
-- `--postgresql` or `--postgres`: Specifies that you want to connect to a PostgreSQL database.
-- `--host`: The hostname or IP address of the PostgreSQL server (required).
-- `--database`: The name of the database to connect to (required).
-- `--user`: The PostgreSQL user to authenticate as.
-- `--password`: The password for the PostgreSQL user.
-- `--port`: The port the PostgreSQL server is listening on (default: 5432).
-- `--ssl`: Whether to use SSL for the connection (true/false).
-- `--connection-timeout`: The connection timeout in milliseconds (default: 30000).
+- `--postgresql` 或 `--postgres`: 指定要连接到 PostgreSQL 数据库。
+- `--host`: PostgreSQL 服务器的主机名或 IP 地址(必需)。
+- `--database`: 要连接的数据库名称(必需)。
+- `--user`: 要进行身份验证的 PostgreSQL 用户。
+- `--password`: PostgreSQL 用户的密码。
+- `--port`: PostgreSQL 服务器正在侦听的端口(默认: 5432)。
+- `--ssl`: 是否对连接使用 SSL(true/false)。
+- `--connection-timeout`: 连接超时(以毫秒为单位)(默认: 30000)。
 
-## Usage from MCP Client
+## 从 MCP 客户端使用
 
-The MCP client can interact with a PostgreSQL database using the same tools that are available for SQLite and SQL Server. The server automatically translates the generic SQL queries to PostgreSQL-specific formats.
+MCP 客户端可以使用与 SQLite 和 SQL Server 可用的相同工具与 PostgreSQL 数据库交互。服务器会自动将通用 SQL 查询转换为 PostgreSQL 特定格式。
 
-## Supported Features
+## 支持的功能
 
-- Full SQL query support for SELECT, INSERT, UPDATE, and DELETE operations.
-- Table management (CREATE TABLE, ALTER TABLE, DROP TABLE).
-- Schema introspection.
-- Connection pooling for efficient database access.
-- SSL support for secure connections.
+- 完整的 SQL 查询支持,用于 SELECT、INSERT、UPDATE 和 DELETE 操作。
+- 表管理(CREATE TABLE、ALTER TABLE、DROP TABLE)。
+- 架构内省。
+- 连接池以实现高效的数据库访问。
+- SSL 支持以实现安全连接。
 
-## Examples
+## 示例
 
-### Create a Table
+### 创建表
 
 ```sql
 CREATE TABLE users (
@@ -66,46 +66,46 @@ CREATE TABLE users (
 );
 ```
 
-### Insert Data
+### 插入数据
 
 ```sql
 INSERT INTO users (username, email) VALUES ('johndoe', 'john@example.com');
 ```
 
-### Query Data
+### 查询数据
 
 ```sql
 SELECT * FROM users WHERE username = 'johndoe';
 ```
 
-## Limitations
+## 限制
 
-- For the `run` method with INSERT statements, the adapter attempts to retrieve the last inserted ID by adding a RETURNING clause. This assumes your tables have an 'id' column.
-- Complex stored procedures or PostgreSQL-specific features might require custom implementation.
+- 对于带有 INSERT 语句的 `run` 方法,适配器会尝试通过添加 RETURNING 子句来检索最后插入的 ID。这假设您的表具有 'id' 列。
+- 复杂的存储过程或 PostgreSQL 特定功能可能需要自定义实现。
 
-## Troubleshooting
+## 故障排除
 
-### Connection Issues
+### 连接问题
 
-If you're having trouble connecting to your PostgreSQL database:
+如果您在连接 PostgreSQL 数据库时遇到问题:
 
-1. Verify that PostgreSQL is running: `pg_isready -h localhost -p 5432`
-2. Check that your credentials are correct.
-3. Ensure that the database exists and the user has appropriate permissions.
-4. Check firewall settings if connecting to a remote database.
+1. 验证 PostgreSQL 正在运行: `pg_isready -h localhost -p 5432`
+2. 检查您的凭据是否正确。
+3. 确保数据库存在且用户具有适当的权限。
+4. 如果连接到远程数据库,请检查防火墙设置。
 
-### Query Errors
+### 查询错误
 
-If your queries are failing:
+如果您的查询失败:
 
-1. Check the syntax against PostgreSQL's SQL dialect.
-2. Verify table and column names.
-3. Check that the user has proper permissions for the operations.
+1. 根据 PostgreSQL 的 SQL 方言检查语法。
+2. 验证表名和列名。
+3. 检查用户是否对操作具有适当的权限。
 
-## Performance Considerations
+## 性能考虑
 
-For optimal performance:
+为了获得最佳性能:
 
-1. Use parameterized queries to prevent SQL injection and improve query caching.
-2. Consider indexing frequently queried columns.
-3. For large result sets, use LIMIT and OFFSET for pagination. 
+1. 使用参数化查询以防止 SQL 注入并提高查询缓存。
+2. 考虑为经常查询的列创建索引。
+3. 对于大结果集,使用 LIMIT 和 OFFSET 进行分页。
