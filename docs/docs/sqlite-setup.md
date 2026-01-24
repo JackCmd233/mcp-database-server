@@ -1,26 +1,26 @@
-# SQLite Setup Guide
+# SQLite 设置指南
 
-This guide provides instructions for setting up and using the SQLite adapter with the MCP Database Server.
+本指南提供了设置和使用 SQLite 适配器与 MCP 数据库服务器的说明。
 
-## Prerequisites
+## 前提条件
 
-1. No additional installations required - SQLite is included with the MCP Database Server
-2. Node.js 18 or later
-3. A valid SQLite database file or a path to create a new one
+1. 无需额外安装 - SQLite 已包含在 MCP 数据库服务器中
+2. Node.js 18 或更高版本
+3. 有效的 SQLite 数据库文件或创建新数据库的路径
 
-## Running the Server with SQLite
+## 使用 SQLite 运行服务器
 
-To connect to an SQLite database, use the following command:
+要连接到 SQLite 数据库,请使用以下命令:
 
 ```bash
 node dist/src/index.js /path/to/your/database.db
 ```
 
-If the database file doesn't exist, it will be created automatically.
+如果数据库文件不存在,它将自动创建。
 
-## Configuring Claude Desktop
+## 配置 Claude Desktop
 
-Update your Claude configuration file to add SQLite support:
+更新您的 Claude 配置文件以添加 SQLite 支持:
 
 ```json
 {
@@ -37,7 +37,7 @@ Update your Claude configuration file to add SQLite support:
 }
 ```
 
-For local development:
+对于本地开发:
 
 ```json
 {
@@ -45,7 +45,7 @@ For local development:
     "sqlite": {
       "command": "node",
       "args": [
-        "/absolute/path/to/mcp-database-server/dist/src/index.js", 
+        "/absolute/path/to/mcp-database-server/dist/src/index.js",
         "/path/to/your/database.db"
       ]
     }
@@ -53,33 +53,33 @@ For local development:
 }
 ```
 
-## SQLite-Specific Features
+## SQLite 特定功能
 
-### In-Memory Databases
+### 内存数据库
 
-For temporary in-memory databases, use the special `:memory:` path:
+对于临时内存数据库,使用特殊的 `:memory:` 路径:
 
 ```bash
 node dist/src/index.js :memory:
 ```
 
-### Write-Ahead Logging (WAL)
+### 预写日志(WAL)
 
-By default, the server enables Write-Ahead Logging mode for better concurrency and performance.
+默认情况下,服务器启用预写日志模式以获得更好的并发性和性能。
 
-### Data Types
+### 数据类型
 
-SQLite uses dynamic typing with the following storage classes:
+SQLite 使用动态类型,具有以下存储类:
 - NULL
 - INTEGER
 - REAL
 - TEXT
 - BLOB
 
-## SQL Syntax Examples
+## SQL 语法示例
 
 ```sql
--- Creating a table in SQLite
+-- 在 SQLite 中创建表
 CREATE TABLE Products (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
@@ -87,36 +87,36 @@ CREATE TABLE Products (
   category TEXT
 );
 
--- Querying with LIMIT and OFFSET
+-- 使用 LIMIT 和 OFFSET 查询
 SELECT * FROM Products LIMIT 10 OFFSET 20;
 
--- Date formatting
+-- 日期格式化
 SELECT date('now') as today;
 SELECT strftime('%Y-%m-%d', date_column) as formatted_date FROM Orders;
 
--- String concatenation
+-- 字符串连接
 SELECT first_name || ' ' || last_name as full_name FROM Customers;
 ```
 
-## Troubleshooting
+## 故障排除
 
-### Database Locked
+### 数据库被锁定
 
-If you encounter "database is locked" errors:
-1. Ensure no other connections are using the database file
-2. Check file permissions
-3. Wait a moment and retry the operation
+如果遇到 "数据库被锁定" 错误:
+1. 确保没有其他连接正在使用数据库文件
+2. 检查文件权限
+3. 等待片刻,然后重试操作
 
-### File Access Issues
+### 文件访问问题
 
-If you cannot access the database file:
-1. Verify the file path is correct
-2. Check that the directory exists and is writable
-3. Ensure the Node.js process has appropriate permissions
+如果无法访问数据库文件:
+1. 验证文件路径是否正确
+2. 检查目录是否存在且可写
+3. 确保 Node.js 进程具有适当的权限
 
-## Performance Tips
+## 性能提示
 
-1. Use indexes for frequently queried columns
-2. Keep transactions short
-3. Use parameterized queries for better performance and security
-4. Consider periodic VACUUM operations to reclaim space 
+1. 为经常查询的列创建索引
+2. 保持事务简短
+3. 使用参数化查询以获得更好的性能和安全性
+4. 考虑定期执行 VACUUM 操作以回收空间
