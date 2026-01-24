@@ -1,92 +1,92 @@
-# Database Tools Reference
+# 数据库工具参考
 
-The MCP Database Server provides a set of tools that Claude can use to interact with your databases. This page describes each tool, its parameters, and how to use it effectively.
+MCP 数据库服务器提供了一组 Claude 可用于与数据库交互的工具。本页面描述了每个工具、其参数以及如何有效地使用它。
 
-## Available Tools
+## 可用工具
 
-| Tool | Description | Required Parameters |
+| 工具 | 描述 | 必需参数 |
 |------|-------------|---------------------|
-| `read_query` | Execute SELECT queries to read data | `query`: SQL SELECT statement |
-| `write_query` | Execute INSERT, UPDATE, or DELETE queries | `query`: SQL modification statement |
-| `create_table` | Create new tables in the database | `query`: CREATE TABLE statement |
-| `alter_table` | Modify existing table schema | `query`: ALTER TABLE statement |
-| `drop_table` | Remove a table from the database | `table_name`: Name of table<br/>`confirm`: Safety flag (must be true) |
-| `list_tables` | Get a list of all tables | None |
-| `describe_table` | View schema information for a table | `table_name`: Name of table |
-| `export_query` | Export query results as CSV/JSON | `query`: SQL SELECT statement<br/>`format`: "csv" or "json" |
-| `append_insight` | Add a business insight to memo | `insight`: Text of insight |
-| `list_insights` | List all business insights | None |
+| `read_query` | 执行 SELECT 查询以读取数据 | `query`: SQL SELECT 语句 |
+| `write_query` | 执行 INSERT、UPDATE 或 DELETE 查询 | `query`: SQL 修改语句 |
+| `create_table` | 在数据库中创建新表 | `query`: CREATE TABLE 语句 |
+| `alter_table` | 修改现有表架构 | `query`: ALTER TABLE 语句 |
+| `drop_table` | 从数据库中删除表 | `table_name`: 表名<br/>`confirm`: 安全标志(必须为 true) |
+| `list_tables` | 获取所有表的列表 | 无 |
+| `describe_table` | 查看表的架构信息 | `table_name`: 表名 |
+| `export_query` | 将查询结果导出为 CSV/JSON | `query`: SQL SELECT 语句<br/>`format`: "csv" 或 "json" |
+| `append_insight` | 将业务洞察添加到备忘录 | `insight`: 洞察文本 |
+| `list_insights` | 列出所有业务洞察 | 无 |
 
-## Tool Usage Examples
+## 工具使用示例
 
-### Reading Data
+### 读取数据
 
-To retrieve data from the database:
-
-```
-What customers have spent more than $1000 in the past month?
-```
-
-Claude will use the `read_query` tool with an appropriate SQL query.
-
-### Writing Data
-
-To insert, update, or delete data:
+要从数据库检索数据:
 
 ```
-Add a new product called "Deluxe Widget" with price $29.99 to the Products table.
+上个月花费超过 1000 美元的客户有哪些?
 ```
 
-Claude will use the `write_query` tool to perform the INSERT operation.
+Claude 将使用带有适当 SQL 查询的 `read_query` 工具。
 
-### Schema Management
+### 写入数据
 
-To create or modify tables:
-
-```
-Create a new table called "CustomerFeedback" with columns for customer ID, rating (1-5), and comment text.
-```
-
-Claude will use the `create_table` tool to define the new table.
-
-### Exporting Data
-
-To export query results:
+要插入、更新或删除数据:
 
 ```
-Export all sales from the last quarter as CSV.
+添加一个名为 "Deluxe Widget" 的新产品,价格为 29.99 美元,到 Products 表中。
 ```
 
-Claude will use the `export_query` tool with the format parameter set to "csv".
+Claude 将使用 `write_query` 工具执行 INSERT 操作。
 
-### Working with Insights
+### 架构管理
 
-Claude can track important observations during your database analysis:
+要创建或修改表:
 
 ```
-Add an insight that "Sales are 15% higher on weekends compared to weekdays"
+创建一个名为 "CustomerFeedback" 的新表,包含客户 ID、评分(1-5)和评论文本列。
 ```
 
-Claude will use the `append_insight` tool to record this information.
+Claude 将使用 `create_table` 工具定义新表。
 
-## Best Practices
+### 导出数据
 
-1. **Be specific in your requests**: Provide clear details about what data you want to retrieve or modify.
+要导出查询结果:
 
-2. **Use natural language**: Ask questions as you would to a human analyst. Claude will convert your request into appropriate SQL.
+```
+将上一季度的所有销售导出为 CSV。
+```
 
-3. **Review before committing**: For data modifications, always review what Claude proposes before confirming.
+Claude 将使用 `export_query` 工具,并将 format 参数设置为 "csv"。
 
-4. **Consider data volume**: For large tables, use filtering to limit result sets.
+### 使用洞察
 
-5. **Think about performance**: Complex queries on large tables might take time to execute.
+Claude 可以在您的数据库分析过程中跟踪重要观察:
 
-## Limitations
+```
+添加一个洞察,"与工作日相比,周末的销售额高出 15%"
+```
 
-1. The server does not support certain database-specific features like stored procedures or triggers.
+Claude 将使用 `append_insight` 工具记录此信息。
 
-2. For security reasons, file operations and system commands are not available.
+## 最佳实践
 
-3. There may be slight syntax differences between SQLite, SQL Server, and PostgreSQL. Claude will attempt to adapt queries accordingly.
+1. **在请求中具体说明**: 提供关于要检索或修改哪些数据的清晰细节。
 
-4. Large result sets might be truncated to prevent memory issues. 
+2. **使用自然语言**: 像向人类分析师提问一样提问。Claude 会将您的请求转换为适当的 SQL。
+
+3. **提交前审查**: 对于数据修改,请始终在确认之前审查 Claude 提出的建议。
+
+4. **考虑数据量**: 对于大表,使用过滤来限制结果集。
+
+5. **考虑性能**: 对大表的复杂查询可能需要一些时间来执行。
+
+## 限制
+
+1. 服务器不支持某些数据库特定的功能,如存储过程或触发器。
+
+2. 出于安全原因,文件操作和系统命令不可用。
+
+3. SQLite、SQL Server 和 PostgreSQL 之间可能存在轻微的语法差异。Claude 会尝试相应地调整查询。
+
+4. 大结果集可能会被截断以防止内存问题。
