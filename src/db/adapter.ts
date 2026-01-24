@@ -1,68 +1,68 @@
 /**
- * Database adapter interface
- * Defines the contract for all database implementations (SQLite, SQL Server)
+ * 数据库适配器接口
+ * 定义所有数据库实现的契约(SQLite、SQL Server)
  */
 export interface DbAdapter {
   /**
-   * Initialize database connection
+   * 初始化数据库连接
    */
   init(): Promise<void>;
 
   /**
-   * Close database connection
+   * 关闭数据库连接
    */
   close(): Promise<void>;
 
   /**
-   * Execute a query and return all results
-   * @param query SQL query to execute
-   * @param params Query parameters
+   * 执行查询并返回所有结果
+   * @param query 要执行的 SQL 查询
+   * @param params 查询参数
    */
   all(query: string, params?: any[]): Promise<any[]>;
 
   /**
-   * Execute a query that modifies data
-   * @param query SQL query to execute
-   * @param params Query parameters
+   * 执行修改数据的查询
+   * @param query 要执行的 SQL 查询
+   * @param params 查询参数
    */
   run(query: string, params?: any[]): Promise<{ changes: number, lastID: number }>;
 
   /**
-   * Execute multiple SQL statements
-   * @param query SQL statements to execute
+   * 执行多条 SQL 语句
+   * @param query 要执行的 SQL 语句
    */
   exec(query: string): Promise<void>;
 
   /**
-   * Get database metadata
+   * 获取数据库元数据
    */
   getMetadata(): { name: string, type: string, path?: string, server?: string, database?: string };
 
   /**
-   * Get database-specific query for listing tables
+   * 获取列出表的数据库特定查询
    */
   getListTablesQuery(): string;
 
   /**
-   * Get database-specific query for describing a table
-   * @param tableName Table name
+   * 获取描述表的数据库特定查询
+   * @param tableName 表名
    */
   getDescribeTableQuery(tableName: string): string;
 }
 
-// Import adapters using dynamic imports
+// 使用动态导入适配器
 import { SqliteAdapter } from './sqlite-adapter.js';
 import { SqlServerAdapter } from './sqlserver-adapter.js';
 import { PostgresqlAdapter } from './postgresql-adapter.js';
 import { MysqlAdapter } from './mysql-adapter.js';
 
 /**
- * Factory function to create the appropriate database adapter
+ * 工厂函数,创建相应的数据库适配器
  */
 export function createDbAdapter(type: string, connectionInfo: any): DbAdapter {
   switch (type.toLowerCase()) {
     case 'sqlite':
-      // For SQLite, if connectionInfo is a string, use it directly as path
+      // 对于 SQLite,如果 connectionInfo 是字符串,则直接将其用作路径
       if (typeof connectionInfo === 'string') {
         return new SqliteAdapter(connectionInfo);
       } else {
