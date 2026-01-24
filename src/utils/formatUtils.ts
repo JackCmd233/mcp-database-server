@@ -1,26 +1,26 @@
 /**
- * Convert data to CSV format
- * @param data Array of objects to convert to CSV
- * @returns CSV formatted string
+ * 将数据转换为 CSV 格式
+ * @param data 要转换为 CSV 的对象数组
+ * @returns CSV 格式的字符串
  */
 export function convertToCSV(data: any[]): string {
   if (data.length === 0) return '';
   
-  // Get headers
+  // 获取表头
   const headers = Object.keys(data[0]);
-  
-  // Create CSV header row
+
+  // 创建 CSV 表头行
   let csv = headers.join(',') + '\n';
-  
-  // Add data rows
+
+  // 添加数据行
   data.forEach(row => {
     const values = headers.map(header => {
       const val = row[header];
-      // Handle strings with commas, quotes, etc.
+      // 处理包含逗号、引号等的字符串
       if (typeof val === 'string') {
         return `"${val.replace(/"/g, '""')}"`;
       }
-      // Use empty string for null/undefined
+      // 对于 null/undefined 使用空字符串
       return val === null || val === undefined ? '' : val;
     });
     csv += values.join(',') + '\n';
@@ -30,9 +30,9 @@ export function convertToCSV(data: any[]): string {
 }
 
 /**
- * Format error response
- * @param error Error object or message
- * @returns Formatted error response object
+ * 格式化错误响应
+ * @param error 错误对象或错误消息
+ * @returns 格式化的错误响应对象
  */
 export function formatErrorResponse(error: Error | string): { content: Array<{type: string, text: string}>, isError: boolean } {
   const message = error instanceof Error ? error.message : error;
@@ -46,9 +46,9 @@ export function formatErrorResponse(error: Error | string): { content: Array<{ty
 }
 
 /**
- * Format success response
- * @param data Data to format
- * @returns Formatted success response object
+ * 格式化成功响应
+ * @param data 要格式化的数据
+ * @returns 格式化的成功响应对象
  */
 export function formatSuccessResponse(data: any): { content: Array<{type: string, text: string}>, isError: boolean } {
   return {
