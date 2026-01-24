@@ -2,7 +2,7 @@ import { DbAdapter } from "./adapter.js";
 import sql from 'mssql';
 
 /**
- * SQL Server database adapter implementation
+ * SQL Server 数据库适配器实现
  */
 export class SqlServerAdapter implements DbAdapter {
   private pool: sql.ConnectionPool | null = null;
@@ -22,7 +22,7 @@ export class SqlServerAdapter implements DbAdapter {
     this.server = connectionInfo.server;
     this.database = connectionInfo.database;
     
-    // Create SQL Server connection config
+    // 创建 SQL Server 连接配置
     this.config = {
       server: connectionInfo.server,
       database: connectionInfo.database,
@@ -33,19 +33,19 @@ export class SqlServerAdapter implements DbAdapter {
       }
     };
 
-    // Add authentication options
+    // 添加认证选项
     if (connectionInfo.user && connectionInfo.password) {
       this.config.user = connectionInfo.user;
       this.config.password = connectionInfo.password;
     } else {
-      // Use Windows authentication if no username/password provided
+      // 如果未提供用户名/密码,则使用 Windows 身份验证
       this.config.options!.trustedConnection = true;
       this.config.options!.enableArithAbort = true;
     }
   }
 
   /**
-   * Initialize SQL Server connection
+   * 初始化 SQL Server 连接
    */
   async init(): Promise<void> {
     try {
@@ -59,10 +59,10 @@ export class SqlServerAdapter implements DbAdapter {
   }
 
   /**
-   * Execute a SQL query and get all results
-   * @param query SQL query to execute
-   * @param params Query parameters
-   * @returns Promise with query results
+   * 执行 SQL 查询并获取所有结果
+   * @param query 要执行的 SQL 查询
+   * @param params 查询参数
+   * @returns 包含查询结果的 Promise
    */
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.pool) {
@@ -72,12 +72,12 @@ export class SqlServerAdapter implements DbAdapter {
     try {
       const request = this.pool.request();
       
-      // Add parameters to the request
+      // 向请求添加参数
       params.forEach((param, index) => {
         request.input(`param${index}`, param);
       });
       
-      // Replace ? with named parameters
+      // 将 ? 替换为命名参数
       const preparedQuery = query.replace(/\?/g, (_, i) => `@param${i}`);
       
       const result = await request.query(preparedQuery);
@@ -88,10 +88,10 @@ export class SqlServerAdapter implements DbAdapter {
   }
 
   /**
-   * Execute a SQL query that modifies data
-   * @param query SQL query to execute
-   * @param params Query parameters
-   * @returns Promise with result info
+   * 执行修改数据的 SQL 查询
+   * @param query 要执行的 SQL 查询
+   * @param params 查询参数
+   * @returns 包含结果信息的 Promise
    */
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.pool) {
@@ -101,15 +101,15 @@ export class SqlServerAdapter implements DbAdapter {
     try {
       const request = this.pool.request();
       
-      // Add parameters to the request
+      // 向请求添加参数
       params.forEach((param, index) => {
         request.input(`param${index}`, param);
       });
       
-      // Replace ? with named parameters
+      // 将 ? 替换为命名参数
       const preparedQuery = query.replace(/\?/g, (_, i) => `@param${i}`);
       
-      // Add output parameter for identity value if it's an INSERT
+      // 如果是 INSERT,添加标识值的输出参数
       let lastID = 0;
       if (query.trim().toUpperCase().startsWith('INSERT')) {
         request.output('insertedId', sql.Int, 0);
@@ -131,9 +131,9 @@ export class SqlServerAdapter implements DbAdapter {
   }
 
   /**
-   * Execute multiple SQL statements
-   * @param query SQL statements to execute
-   * @returns Promise that resolves when execution completes
+   * 执行多条 SQL 语句
+   * @param query 要执行的 SQL 语句
+   * @returns 执行完成后解析的 Promise
    */
   async exec(query: string): Promise<void> {
     if (!this.pool) {
@@ -149,7 +149,7 @@ export class SqlServerAdapter implements DbAdapter {
   }
 
   /**
-   * Close the database connection
+   * 关闭数据库连接
    */
   async close(): Promise<void> {
     if (this.pool) {
@@ -159,7 +159,7 @@ export class SqlServerAdapter implements DbAdapter {
   }
 
   /**
-   * Get database metadata
+   * 获取数据库元数据
    */
   getMetadata(): { name: string, type: string, server: string, database: string } {
     return {
@@ -171,15 +171,15 @@ export class SqlServerAdapter implements DbAdapter {
   }
 
   /**
-   * Get database-specific query for listing tables
+   * 获取列出表的数据库特定查询
    */
   getListTablesQuery(): string {
     return "SELECT TABLE_NAME as name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME";
   }
 
   /**
-   * Get database-specific query for describing a table
-   * @param tableName Table name
+   * 获取描述表的数据库特定查询
+   * @param tableName 表名
    */
   getDescribeTableQuery(tableName: string): string {
     return `
@@ -203,13 +203,13 @@ export class SqlServerAdapter implements DbAdapter {
   }
 
   /**
-   * Helper to get the number of affected rows based on query type
+   * 根据查询类型获取受影响行数的辅助方法
    */
   private getAffectedRows(query: string, lastID: number): number {
     const queryType = query.trim().split(' ')[0].toUpperCase();
     if (queryType === 'INSERT' && lastID > 0) {
       return 1;
     }
-    return 0; // For SELECT, unknown for UPDATE/DELETE without additional query
+    return 0; // 对于 SELECT 返回 0,对于 UPDATE/DELETE 在没有额外查询的情况下未知
   }
 } 
