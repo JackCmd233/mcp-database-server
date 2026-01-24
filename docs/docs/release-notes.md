@@ -1,64 +1,64 @@
-# Release Notes
+# 发布说明
 
-## Version 1.0.2 (Current)
+## 版本 1.0.2(当前)
 
-**Release Date:** April 2025
+**发布日期:** 2025 年 4 月
 
-### New Features
-- Complete overhaul of documentation with new Docusaurus implementation
-- Updated branding with blue color scheme
-- Added comprehensive connection reference guide
-- Improved database tools documentation
-- New getting started guide for easier onboarding
+### 新功能
+- 使用新的 Docusaurus 实现完全重写文档
+- 使用蓝色配色方案更新品牌
+- 添加全面的连接参考指南
+- 改进数据库工具文档
+- 新的快速入门指南,便于入门
 
-### Improvements
-- Better error handling for database connections
-- Enhanced SQL query performance, particularly for large result sets
-- Updated Node.js dependencies to the latest stable versions
-- Improved security for credential handling
-- Added environment variable support for sensitive connection information
+### 改进
+- 更好的数据库连接错误处理
+- 增强 SQL 查询性能,特别是对于大结果集
+- 将 Node.js 依赖项更新到最新的稳定版本
+- 改进凭据处理的安全性
+- 为敏感连接信息添加环境变量支持
 
-### Bug Fixes
-- Fixed connection issue with SQL Server when using Windows Authentication
-- Corrected error in PostgreSQL RETURNING clause handling
-- Addressed memory leak in connection pooling
-- Fixed date formatting in SQLite exports
+### 错误修复
+- 修复使用 Windows 身份验证时 SQL Server 的连接问题
+- 更正 PostgreSQL RETURNING 子句处理中的错误
+- 解决连接池中的内存泄漏问题
+- 修复 SQLite 导出中的日期格式问题
 
-## Version 1.0.1
+## 版本 1.0.1
 
-**Release Date:** April 2025
+**发布日期:** 2025 年 4 月
 
-### New Features
-- Initial support for PostgreSQL databases
-- Added export functionality for CSV and JSON formats
-- Introduced business insights tracking with memo feature
+### 新功能
+- PostgreSQL 数据库的初步支持
+- 添加 CSV 和 JSON 格式的导出功能
+- 引入带有备忘录功能的业务洞察跟踪
 
-### Improvements
-- Enhanced error reporting for failed queries
-- Better handling of large result sets
-- Optimized connection pooling for SQL Server
+### 改进
+- 增强失败查询的错误报告
+- 更好地处理大结果集
+- 优化 SQL Server 的连接池
 
-### Bug Fixes
-- Fixed SQL Server authentication with special characters in password
-- Addressed timeout issues with long-running queries
-- Resolved schema detection problems with certain table names
+### 错误修复
+- 修复密码中包含特殊字符的 SQL Server 身份验证
+- 解决长时间运行的查询的超时问题
+- 解决某些表名的架构检测问题
 
-## Version 1.0.0
+## 版本 1.0.0
 
-**Release Date:** April 2025
+**发布日期:** 2025 年 4 月
 
-### Initial Release Features
-- Support for SQLite and SQL Server databases
-- Basic SQL query execution (SELECT, INSERT, UPDATE, DELETE)
-- Table management (CREATE, ALTER, DROP)
-- Schema introspection
-- MCP integration for Claude Desktop
-- Node.js-based implementation for cross-platform support
+### 初始发布功能
+- 支持 SQLite 和 SQL Server 数据库
+- 基本 SQL 查询执行(SELECT、INSERT、UPDATE、DELETE)
+- 表管理(CREATE、ALTER、DROP)
+- 架构内省
+- Claude Desktop 的 MCP 集成
+- 基于 Node.js 的实现,支持跨平台
 
 ## 1.1.0 (2024-05-30)
 
-### Features
-- Added MySQL database support (read/write/query, schema, etc.)
-- Support for passing MySQL port via CLI and config
-- Improved port validation and debug logging for MySQL
-- Updated documentation and examples for MySQL and port usage 
+### 功能
+- 添加 MySQL 数据库支持(读/写/查询、架构等)
+- 支持通过 CLI 和配置传递 MySQL 端口
+- 改进 MySQL 的端口验证和调试日志
+- 更新 MySQL 和端口使用的文档和示例
