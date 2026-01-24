@@ -1,8 +1,8 @@
 import { dbAll, getListTablesQuery, getDescribeTableQuery, getDatabaseMetadata } from '../db/index.js';
 
 /**
- * Handle listing resources request
- * @returns List of available resources
+ * 处理列出资源的请求
+ * @returns 可用资源列表
  */
 export async function handleListResources() {
   try {
@@ -10,7 +10,7 @@ export async function handleListResources() {
     const dbType = dbInfo.type;
     let resourceBaseUrl: URL;
     
-    // Create appropriate URL based on database type
+    // 根据数据库类型创建适当的 URL
     if (dbType === 'sqlite' && dbInfo.path) {
       resourceBaseUrl = new URL(`sqlite:///${dbInfo.path}`);
     } else if (dbType === 'sqlserver' && dbInfo.server && dbInfo.database) {
@@ -21,7 +21,7 @@ export async function handleListResources() {
     
     const SCHEMA_PATH = "schema";
 
-    // Use adapter-specific query to list tables
+    // 使用适配器特定的查询来列出表
     const query = getListTablesQuery();
     const result = await dbAll(query);
     
@@ -38,9 +38,9 @@ export async function handleListResources() {
 }
 
 /**
- * Handle reading a specific resource
- * @param uri URI of the resource to read
- * @returns Resource contents
+ * 处理读取特定资源的请求
+ * @param uri 要读取的资源 URI
+ * @returns 资源内容
  */
 export async function handleReadResource(uri: string) {
   try {
@@ -55,7 +55,7 @@ export async function handleReadResource(uri: string) {
       throw new Error("Invalid resource URI");
     }
 
-    // Use adapter-specific query to describe the table
+    // 使用适配器特定的查询来描述表结构
     const query = getDescribeTableQuery(tableName!);
     const result = await dbAll(query);
 
