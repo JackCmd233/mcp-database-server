@@ -2,9 +2,9 @@ import { dbAll, dbExec, getListTablesQuery, getDescribeTableQuery } from '../db/
 import { formatSuccessResponse } from '../utils/formatUtils.js';
 
 /**
- * Create a new table in the database
- * @param query CREATE TABLE SQL statement
- * @returns Result of the operation
+ * 在数据库中创建新表
+ * @param query CREATE TABLE SQL 语句
+ * @returns 操作结果
  */
 export async function createTable(query: string) {
   try {
@@ -20,9 +20,9 @@ export async function createTable(query: string) {
 }
 
 /**
- * Alter an existing table schema
- * @param query ALTER TABLE SQL statement
- * @returns Result of the operation
+ * 修改现有表的结构
+ * @param query ALTER TABLE SQL 语句
+ * @returns 操作结果
  */
 export async function alterTable(query: string) {
   try {
@@ -38,10 +38,10 @@ export async function alterTable(query: string) {
 }
 
 /**
- * Drop a table from the database
- * @param tableName Name of the table to drop
- * @param confirm Safety confirmation flag
- * @returns Result of the operation
+ * 从数据库中删除表
+ * @param tableName 要删除的表名
+ * @param confirm 安全确认标志
+ * @returns 操作结果
  */
 export async function dropTable(tableName: string, confirm: boolean) {
   try {
@@ -78,8 +78,8 @@ export async function dropTable(tableName: string, confirm: boolean) {
 }
 
 /**
- * List all tables in the database
- * @returns Array of table names
+ * 列出数据库中的所有表
+ * @returns 表名数组
  */
 export async function listTables() {
   try {
@@ -93,9 +93,9 @@ export async function listTables() {
 }
 
 /**
- * Get schema information for a specific table
- * @param tableName Name of the table to describe
- * @returns Column definitions for the table
+ * 获取指定表的结构信息
+ * @param tableName 要描述的表名
+ * @returns 表的列定义
  */
 export async function describeTable(tableName: string) {
   try {
