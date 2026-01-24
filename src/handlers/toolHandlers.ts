@@ -1,13 +1,13 @@
 import { formatErrorResponse } from '../utils/formatUtils.js';
 
-// Import all tool implementations
+// 导入所有工具实现
 import { readQuery, writeQuery, exportQuery } from '../tools/queryTools.js';
 import { createTable, alterTable, dropTable, listTables, describeTable } from '../tools/schemaTools.js';
 import { appendInsight, listInsights } from '../tools/insightTools.js';
 
 /**
- * Handle listing available tools
- * @returns List of available tools
+ * 处理列出可用工具的请求
+ * @returns 可用工具列表
  */
 export function handleListTools() {
   return {
@@ -123,44 +123,44 @@ export function handleListTools() {
 }
 
 /**
- * Handle tool call requests
- * @param name Name of the tool to call
- * @param args Arguments for the tool
- * @returns Tool execution result
+ * 处理工具调用请求
+ * @param name 要调用的工具名称
+ * @param args 工具参数
+ * @returns 工具执行结果
  */
 export async function handleToolCall(name: string, args: any) {
   try {
     switch (name) {
       case "read_query":
         return await readQuery(args.query);
-      
+
       case "write_query":
         return await writeQuery(args.query);
-      
+
       case "create_table":
         return await createTable(args.query);
-      
+
       case "alter_table":
         return await alterTable(args.query);
-      
+
       case "drop_table":
         return await dropTable(args.table_name, args.confirm);
-      
+
       case "export_query":
         return await exportQuery(args.query, args.format);
-      
+
       case "list_tables":
         return await listTables();
-      
+
       case "describe_table":
         return await describeTable(args.table_name);
-      
+
       case "append_insight":
         return await appendInsight(args.insight);
-      
+
       case "list_insights":
         return await listInsights();
-      
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
