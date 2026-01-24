@@ -2,7 +2,7 @@ import sqlite3 from "sqlite3";
 import { DbAdapter } from "./adapter.js";
 
 /**
- * SQLite database adapter implementation
+ * SQLite 数据库适配器实现
  */
 export class SqliteAdapter implements DbAdapter {
   private db: sqlite3.Database | null = null;
@@ -13,11 +13,11 @@ export class SqliteAdapter implements DbAdapter {
   }
 
   /**
-   * Initialize the SQLite database connection
+   * 初始化 SQLite 数据库连接
    */
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
-      // Ensure the dbPath is accessible
+      // 确保数据库路径可访问
       console.error(`[INFO] Opening SQLite database at: ${this.dbPath}`);
       this.db = new sqlite3.Database(this.dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
         if (err) {
@@ -32,10 +32,10 @@ export class SqliteAdapter implements DbAdapter {
   }
 
   /**
-   * Execute a SQL query and get all results
-   * @param query SQL query to execute
-   * @param params Query parameters
-   * @returns Promise with query results
+   * 执行 SQL 查询并返回所有结果
+   * @param query 要执行的 SQL 查询
+   * @param params 查询参数
+   * @returns 包含查询结果的 Promise
    */
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.db) {
@@ -54,10 +54,10 @@ export class SqliteAdapter implements DbAdapter {
   }
 
   /**
-   * Execute a SQL query that modifies data
-   * @param query SQL query to execute
-   * @param params Query parameters
-   * @returns Promise with result info
+   * 执行修改数据的 SQL 查询
+   * @param query 要执行的 SQL 查询
+   * @param params 查询参数
+   * @returns 包含结果信息的 Promise
    */
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.db) {
@@ -76,9 +76,9 @@ export class SqliteAdapter implements DbAdapter {
   }
 
   /**
-   * Execute multiple SQL statements
-   * @param query SQL statements to execute
-   * @returns Promise that resolves when execution completes
+   * 执行多条 SQL 语句
+   * @param query 要执行的 SQL 语句
+   * @returns 执行完成后完成的 Promise
    */
   async exec(query: string): Promise<void> {
     if (!this.db) {
@@ -97,7 +97,7 @@ export class SqliteAdapter implements DbAdapter {
   }
 
   /**
-   * Close the database connection
+   * 关闭数据库连接
    */
   async close(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -118,7 +118,7 @@ export class SqliteAdapter implements DbAdapter {
   }
 
   /**
-   * Get database metadata
+   * 获取数据库元数据
    */
   getMetadata(): { name: string, type: string, path: string } {
     return {
@@ -129,15 +129,15 @@ export class SqliteAdapter implements DbAdapter {
   }
 
   /**
-   * Get database-specific query for listing tables
+   * 获取列出所有表的数据库特定查询
    */
   getListTablesQuery(): string {
     return "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
   }
 
   /**
-   * Get database-specific query for describing a table
-   * @param tableName Table name
+   * 获取描述表结构的数据库特定查询
+   * @param tableName 表名
    */
   getDescribeTableQuery(tableName: string): string {
     return `PRAGMA table_info(${tableName})`;
