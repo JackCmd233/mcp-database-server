@@ -1,144 +1,144 @@
-# Connection Reference
+# 连接参考
 
-This page provides a comprehensive reference for all connection options available for each supported database type.
+本页面为每种支持的数据库类型提供所有可用连接选项的综合参考。
 
-## SQLite Connection Options
+## SQLite 连接选项
 
-SQLite is the simplest database to connect to, as it only requires a path to the database file.
+SQLite 是最简单的连接数据库,因为它只需要数据库文件的路径。
 
 ```bash
 node dist/src/index.js /path/to/your/database.db
 ```
 
-### Special Paths
+### 特殊路径
 
-- `:memory:` - Creates an in-memory database (data is lost when connection is closed)
-- `""` (empty string) - Creates a temporary on-disk database
+- `:memory:` - 创建内存数据库(连接关闭时数据丢失)
+- `""` (空字符串) - 创建临时磁盘数据库
 
-## SQL Server Connection Options
+## SQL Server 连接选项
 
-| Option | Description | Default | Required |
+| 选项 | 描述 | 默认值 | 必需 |
 |--------|-------------|---------|----------|
-| `--sqlserver` | Specifies SQL Server mode | - | Yes |
-| `--server` | SQL Server hostname or IP | - | Yes |
-| `--database` | Database name | - | Yes |
-| `--user` | SQL Server username | - | No* |
-| `--password` | SQL Server password | - | No* |
-| `--port` | SQL Server port | 1433 | No |
-| `--trustServerCertificate` | Trust server certificate (true/false) | false | No |
-| `--connectionTimeout` | Connection timeout in ms | 15000 | No |
-| `--requestTimeout` | Request timeout in ms | 15000 | No |
+| `--sqlserver` | 指定 SQL Server 模式 | - | 是 |
+| `--server` | SQL Server 主机名或 IP | - | 是 |
+| `--database` | 数据库名称 | - | 是 |
+| `--user` | SQL Server 用户名 | - | 否* |
+| `--password` | SQL Server 密码 | - | 否* |
+| `--port` | SQL Server 端口 | 1433 | 否 |
+| `--trustServerCertificate` | 信任服务器证书(true/false) | false | 否 |
+| `--connectionTimeout` | 连接超时(毫秒) | 15000 | 否 |
+| `--requestTimeout` | 请求超时(毫秒) | 15000 | 否 |
 
-*Windows Authentication is used if user and password are omitted
+*如果省略用户和密码,则使用 Windows 身份验证
 
-### Example with Windows Authentication
+### Windows 身份验证示例
 
 ```bash
 node dist/src/index.js --sqlserver --server localhost\\SQLEXPRESS --database Northwind
 ```
 
-### Example with SQL Authentication
+### SQL 身份验证示例
 
 ```bash
 node dist/src/index.js --sqlserver --server dbserver.example.com --database Northwind --user sa --password P@ssw0rd --port 1433
 ```
 
-## PostgreSQL Connection Options
+## PostgreSQL 连接选项
 
-| Option | Description | Default | Required |
+| 选项 | 描述 | 默认值 | 必需 |
 |--------|-------------|---------|----------|
-| `--postgresql` or `--postgres` | Specifies PostgreSQL mode | - | Yes |
-| `--host` | PostgreSQL hostname or IP | - | Yes |
-| `--database` | Database name | - | Yes |
-| `--user` | PostgreSQL username | - | No |
-| `--password` | PostgreSQL password | - | No |
-| `--port` | PostgreSQL port | 5432 | No |
-| `--ssl` | Use SSL connection (true/false) | false | No |
-| `--connection-timeout` | Connection timeout in ms | 30000 | No |
+| `--postgresql` 或 `--postgres` | 指定 PostgreSQL 模式 | - | 是 |
+| `--host` | PostgreSQL 主机名或 IP | - | 是 |
+| `--database` | 数据库名称 | - | 是 |
+| `--user` | PostgreSQL 用户名 | - | 否 |
+| `--password` | PostgreSQL 密码 | - | 否 |
+| `--port` | PostgreSQL 端口 | 5432 | 否 |
+| `--ssl` | 使用 SSL 连接(true/false) | false | 否 |
+| `--connection-timeout` | 连接超时(毫秒) | 30000 | 否 |
 
-### Basic Example
+### 基本示例
 
 ```bash
 node dist/src/index.js --postgresql --host localhost --database sample_db --user postgres --password secret
 ```
 
-### Example with SSL and Custom Port
+### 使用 SSL 和自定义端口示例
 
 ```bash
 node dist/src/index.js --postgresql --host dbserver.example.com --database sample_db --user appuser --password Secure123! --port 5433 --ssl true
 ```
 
-## MySQL Connection Options
+## MySQL 连接选项
 
-| Option | Description | Default | Required |
+| 选项 | 描述 | 默认值 | 必需 |
 |--------|-------------|---------|----------|
-| `--mysql` | Specifies MySQL mode | - | Yes |
-| `--host` | MySQL hostname or IP | - | Yes |
-| `--database` | Database name | - | Yes |
-| `--user` | MySQL username | - | No* |
-| `--password` | MySQL password | - | No* |
-| `--port` | MySQL port | 3306 | No |
-| `--ssl` | Use SSL connection (true/false or object) | false | No |
-| `--connection-timeout` | Connection timeout in ms | 30000 | No |
-| `--aws-iam-auth` | Enable AWS IAM authentication | false | No |
-| `--aws-region` | AWS region for RDS IAM auth | - | No** |
+| `--mysql` | 指定 MySQL 模式 | - | 是 |
+| `--host` | MySQL 主机名或 IP | - | 是 |
+| `--database` | 数据库名称 | - | 是 |
+| `--user` | MySQL 用户名 | - | 否* |
+| `--password` | MySQL 密码 | - | 否* |
+| `--port` | MySQL 端口 | 3306 | 否 |
+| `--ssl` | 使用 SSL 连接(true/false 或对象) | false | 否 |
+| `--connection-timeout` | 连接超时(毫秒) | 30000 | 否 |
+| `--aws-iam-auth` | 启用 AWS IAM 身份验证 | false | 否 |
+| `--aws-region` | RDS IAM 身份验证的 AWS 区域 | - | 否** |
 
-*Required for standard authentication  
-**Required when using `--aws-iam-auth`
+*标准身份验证必需
+**使用 `--aws-iam-auth` 时必需
 
-### Standard Authentication Example
+### 标准身份验证示例
 
 ```bash
 node dist/src/index.js --mysql --host localhost --database sample_db --port 3306 --user root --password secret
 ```
 
-### AWS IAM Authentication Example
+### AWS IAM 身份验证示例
 
-**Prerequisites:** AWS credentials must be configured using the default credential provider chain:
-- `aws configure` (default profile) 
-- `AWS_PROFILE=myprofile` environment variable
-- `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables
-- IAM roles (if running on EC2)
+**前提条件:** 必须使用默认凭据提供程序链配置 AWS 凭据:
+- `aws configure`(默认配置文件)
+- `AWS_PROFILE=myprofile` 环境变量
+- `AWS_ACCESS_KEY_ID` 和 `AWS_SECRET_ACCESS_KEY` 环境变量
+- IAM 角色(如果在 EC2 上运行)
 
 ```bash
 node dist/src/index.js --mysql --aws-iam-auth --host rds-endpoint.region.rds.amazonaws.com --database sample_db --user aws-username --aws-region us-east-1
 ```
 
-## Environment Variables
+## 环境变量
 
-Instead of specifying sensitive credentials on the command line, you can use environment variables:
+除了在命令行上指定敏感凭据外,您还可以使用环境变量:
 
-### SQL Server Environment Variables
+### SQL Server 环境变量
 
-- `MSSQL_SERVER` - SQL Server hostname
-- `MSSQL_DATABASE` - Database name
-- `MSSQL_USER` - SQL Server username
-- `MSSQL_PASSWORD` - SQL Server password
+- `MSSQL_SERVER` - SQL Server 主机名
+- `MSSQL_DATABASE` - 数据库名称
+- `MSSQL_USER` - SQL Server 用户名
+- `MSSQL_PASSWORD` - SQL Server 密码
 
-### PostgreSQL Environment Variables
+### PostgreSQL 环境变量
 
-- `PGHOST` - PostgreSQL hostname
-- `PGDATABASE` - Database name
-- `PGUSER` - PostgreSQL username
-- `PGPASSWORD` - PostgreSQL password
-- `PGPORT` - PostgreSQL port
+- `PGHOST` - PostgreSQL 主机名
+- `PGDATABASE` - 数据库名称
+- `PGUSER` - PostgreSQL 用户名
+- `PGPASSWORD` - PostgreSQL 密码
+- `PGPORT` - PostgreSQL 端口
 
-## Connection Pooling
+## 连接池
 
-All database connections use connection pooling for better performance:
+所有数据库连接都使用连接池以获得更好的性能:
 
-- **SQLite**: Uses a single persistent connection
-- **SQL Server**: Default pool of 5 connections
-- **PostgreSQL**: Default pool of 10 connections
+- **SQLite**: 使用单个持久连接
+- **SQL Server**: 默认连接池为 5 个连接
+- **PostgreSQL**: 默认连接池为 10 个连接
 
-## Connection Security
+## 连接安全
 
-For secure connections:
+对于安全连接:
 
-1. **SQL Server**: Use `--trustServerCertificate false` in production and ensure proper SSL certificates are installed on the server.
+1. **SQL Server**: 在生产环境中使用 `--trustServerCertificate false`,并确保在服务器上安装了正确的 SSL 证书。
 
-2. **PostgreSQL**: Use `--ssl true` and ensure the server is configured for SSL connections.
+2. **PostgreSQL**: 使用 `--ssl true` 并确保服务器配置为 SSL 连接。
 
-3. For all database types, consider using environment variables instead of passing credentials on the command line.
+3. 对于所有数据库类型,考虑使用环境变量而不是在命令行上传递凭据。
 
-4. Store your Claude Desktop configuration file with appropriate file system permissions. 
+4. 使用适当的文件系统权限存储您的 Claude Desktop 配置文件。
