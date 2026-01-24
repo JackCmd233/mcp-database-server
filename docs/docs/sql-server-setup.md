@@ -1,37 +1,37 @@
-# SQL Server Setup Guide
+# SQL Server 设置指南
 
-This guide provides instructions for setting up and using the SQL Server adapter with the MCP Database Server.
+本指南提供了设置和使用 SQL Server 适配器与 MCP 数据库服务器的说明。
 
-## Prerequisites
+## 前提条件
 
-1. Access to a SQL Server instance (2012 or later)
-2. Node.js 18 or later
-3. Required permissions to connect to the SQL Server database
+1. 访问 SQL Server 实例(2012 或更高版本)
+2. Node.js 18 或更高版本
+3. 连接到 SQL Server 数据库所需权限
 
-## Installation
+## 安装
 
-1. Follow the main installation steps in the README.md file
-2. Ensure the mssql package is installed:
+1. 按照 README.md 文件中的主要安装步骤操作
+2. 确保安装了 mssql 包:
 ```bash
 npm install mssql
 npm install @types/mssql --save-dev
 ```
 
-## Authentication Options
+## 身份验证选项
 
-The SQL Server adapter supports multiple authentication methods:
+SQL Server 适配器支持多种身份验证方法:
 
-### SQL Server Authentication
+### SQL Server 身份验证
 
-Use the `--user` and `--password` parameters to authenticate with SQL Server credentials:
+使用 `--user` 和 `--password` 参数通过 SQL Server 凭据进行身份验证:
 
 ```bash
 node dist/src/index.js --sqlserver --server myserver --database mydatabase --user myuser --password mypassword
 ```
 
-### Windows Authentication
+### Windows 身份验证
 
-Omit the `--user` and `--password` parameters to use Windows Authentication (trusted connection):
+省略 `--user` 和 `--password` 参数以使用 Windows 身份验证(可信连接):
 
 ```bash
 node dist/src/index.js --sqlserver --server myserver --database mydatabase
@@ -39,7 +39,7 @@ node dist/src/index.js --sqlserver --server myserver --database mydatabase
 
 ### Azure Active Directory
 
-For Azure SQL Database with Azure AD authentication, you'll need to set up connection options:
+对于使用 Azure AD 身份验证的 Azure SQL 数据库,您需要设置连接选项:
 
 ```json
 {
@@ -59,9 +59,9 @@ For Azure SQL Database with Azure AD authentication, you'll need to set up conne
 }
 ```
 
-## Configuring Claude
+## 配置 Claude
 
-Update your Claude configuration file to add SQL Server support:
+更新您的 Claude 配置文件以添加 SQL Server 支持:
 
 ```json
 {
@@ -81,7 +81,7 @@ Update your Claude configuration file to add SQL Server support:
 }
 ```
 
-For local SQL Server with Windows Authentication:
+对于使用 Windows 身份验证的本地 SQL Server:
 
 ```json
 {
@@ -99,44 +99,44 @@ For local SQL Server with Windows Authentication:
 }
 ```
 
-## Connection Options
+## 连接选项
 
-Additional connection options include:
+其他连接选项包括:
 
-- `--port`: Specify a non-default port (default is 1433)
-- Add `--trustServerCertificate true` if you're connecting to a development/test server with a self-signed certificate
+- `--port`: 指定非默认端口(默认为 1433)
+- 如果连接到具有自签名证书的开发/测试服务器,添加 `--trustServerCertificate true`
 
-## Troubleshooting
+## 故障排除
 
-### Common Connection Issues
+### 常见连接问题
 
-1. **Login failed for user**
-   - Verify username and password
-   - Check if the SQL Server account is enabled and not locked
+1. **用户登录失败**
+   - 验证用户名和密码
+   - 检查 SQL Server 帐户是否已启用且未锁定
 
-2. **Cannot connect to server**
-   - Ensure SQL Server is running
-   - Check firewall settings
-   - Verify server name is correct (including instance name if applicable)
+2. **无法连接到服务器**
+   - 确保 SQL Server 正在运行
+   - 检查防火墙设置
+   - 验证服务器名称是否正确(包括实例名称,如果适用)
 
-3. **SSL errors**
-   - Add `--trustServerCertificate true` for development environments
+3. **SSL 错误**
+   - 对于开发环境,添加 `--trustServerCertificate true`
 
-### Verifying Connection
+### 验证连接
 
-You can test your SQL Server connection using the standard SQL Server tools:
+您可以使用标准 SQL Server 工具测试 SQL Server 连接:
 
-1. Using SQL Server Management Studio (SSMS)
-2. Using the `sqlcmd` utility:
+1. 使用 SQL Server Management Studio (SSMS)
+2. 使用 `sqlcmd` 实用程序:
    ```
    sqlcmd -S server_name -d database_name -U username -P password
    ```
 
-## SQL Syntax Differences
+## SQL 语法差异
 
-Note that there may be syntax differences between SQLite and SQL Server. Here are some common differences:
+请注意,SQLite 和 SQL Server 之间可能存在语法差异。以下是一些常见差异:
 
-1. **String concatenation**
+1. **字符串连接**
    - SQLite: `||`
    - SQL Server: `+`
 
@@ -144,12 +144,12 @@ Note that there may be syntax differences between SQLite and SQL Server. Here ar
    - SQLite: `LIMIT x OFFSET y`
    - SQL Server: `OFFSET y ROWS FETCH NEXT x ROWS ONLY`
 
-3. **Date formatting**
+3. **日期格式化**
    - SQLite: `strftime()`
-   - SQL Server: `FORMAT()` or `CONVERT()`
+   - SQL Server: `FORMAT()` 或 `CONVERT()`
 
-4. **Auto-increment columns**
+4. **自增列**
    - SQLite: `INTEGER PRIMARY KEY AUTOINCREMENT`
    - SQL Server: `INT IDENTITY(1,1)`
 
-When using Claude, be aware of these syntax differences when crafting SQL queries. 
+在使用 Claude 时,在编写 SQL 查询时请注意这些语法差异。
