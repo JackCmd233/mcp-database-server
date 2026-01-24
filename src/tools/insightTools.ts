@@ -2,9 +2,9 @@ import { dbAll, dbExec, dbRun } from '../db/index.js';
 import { formatSuccessResponse } from '../utils/formatUtils.js';
 
 /**
- * Add a business insight to the memo
- * @param insight Business insight text
- * @returns Result of the operation
+ * 添加业务洞察到备忘录
+ * @param insight 业务洞察文本
+ * @returns 操作结果
  */
 export async function appendInsight(insight: string) {
   try {
@@ -12,7 +12,7 @@ export async function appendInsight(insight: string) {
       throw new Error("Insight text is required");
     }
 
-    // Create insights table if it doesn't exist
+    // 如果 insights 表不存在则创建
     await dbExec(`
       CREATE TABLE IF NOT EXISTS mcp_insights (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,8 +20,8 @@ export async function appendInsight(insight: string) {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    
-    // Insert the insight
+
+    // 插入洞察记录
     await dbRun(
       "INSERT INTO mcp_insights (insight) VALUES (?)",
       [insight]
@@ -34,18 +34,18 @@ export async function appendInsight(insight: string) {
 }
 
 /**
- * List all insights in the memo
- * @returns Array of insights
+ * 列出备忘录中的所有洞察
+ * @returns 洞察数组
  */
 export async function listInsights() {
   try {
-    // Check if insights table exists
+    // 检查 insights 表是否存在
     const tableExists = await dbAll(
       "SELECT name FROM sqlite_master WHERE type='table' AND name = 'mcp_insights'"
     );
     
     if (tableExists.length === 0) {
-      // Create table if it doesn't exist
+      // 如果表不存在则创建
       await dbExec(`
         CREATE TABLE IF NOT EXISTS mcp_insights (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
