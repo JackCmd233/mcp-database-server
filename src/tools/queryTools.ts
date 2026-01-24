@@ -2,9 +2,9 @@ import { dbAll, dbRun, dbExec } from '../db/index.js';
 import { formatErrorResponse, formatSuccessResponse, convertToCSV } from '../utils/formatUtils.js';
 
 /**
- * Execute a read-only SQL query
- * @param query SQL query to execute
- * @returns Query results
+ * 执行只读 SQL 查询
+ * @param query 要执行的 SQL 查询
+ * @returns 查询结果
  */
 export async function readQuery(query: string) {
   try {
@@ -20,9 +20,9 @@ export async function readQuery(query: string) {
 }
 
 /**
- * Execute a data modification SQL query
- * @param query SQL query to execute
- * @returns Information about affected rows
+ * 执行数据修改 SQL 查询
+ * @param query 要执行的 SQL 查询
+ * @returns 受影响行的信息
  */
 export async function writeQuery(query: string) {
   try {
@@ -44,10 +44,10 @@ export async function writeQuery(query: string) {
 }
 
 /**
- * Export query results to CSV or JSON format
- * @param query SQL query to execute
- * @param format Output format (csv or json)
- * @returns Formatted query results
+ * 将查询结果导出为 CSV 或 JSON 格式
+ * @param query 要执行的 SQL 查询
+ * @param format 输出格式(csv 或 json)
+ * @returns 格式化的查询结果
  */
 export async function exportQuery(query: string, format: string) {
   try {
