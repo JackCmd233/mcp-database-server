@@ -1,148 +1,148 @@
 [![MseeP.ai Security Assessment Badge](https://mseep.net/pr/executeautomation-mcp-database-server-badge.png)](https://mseep.ai/app/executeautomation-mcp-database-server)
 
-# MCP Database Server
+# MCP 数据库服务器
 
-This MCP (Model Context Protocol) server provides database access capabilities to Claude, supporting SQLite, SQL Server, PostgreSQL, and MySQL databases.
+本 MCP (Model Context Protocol) 服务器为 Claude 提供数据库访问能力,支持 SQLite、SQL Server、PostgreSQL 和 MySQL 数据库。
 
-## Installation
+## 安装
 
-1. Clone the repository:
+1. 克隆仓库:
 ```
 git clone https://github.com/executeautomation/mcp-database-server.git
 cd mcp-database-server
 ```
 
-2. Install dependencies:
+2. 安装依赖:
 ```
 npm install
 ```
 
-3. Build the project:
+3. 构建项目:
 ```
 npm run build
 ```
 
-## Usage Options
+## 使用选项
 
-There are two ways to use this MCP server with Claude:
+有两种方式可以在 Claude 中使用此 MCP 服务器:
 
-1. **Direct usage**: Install the package globally and use it directly
-2. **Local development**: Run from your local development environment
+1. **直接使用**: 全局安装包并直接使用
+2. **本地开发**: 从本地开发环境运行
 
-### Direct Usage with NPM Package
+### 使用 NPM 包直接安装
 
-The easiest way to use this MCP server is by installing it globally:
+使用此 MCP 服务器最简单的方法是全局安装:
 
 ```bash
 npm install -g @executeautomation/database-server
 ```
 
-This allows you to use the server directly without building it locally.
+这允许您直接使用服务器,无需在本地构建。
 
-### Local Development Setup
+### 本地开发设置
 
-If you want to modify the code or run from your local environment:
+如果您想修改代码或在本地环境运行:
 
-1. Clone and build the repository as shown in the Installation section
-2. Run the server using the commands in the Usage section below
+1. 按照安装部分所示克隆并构建仓库
+2. 使用下面使用部分中的命令运行服务器
 
-## Usage
+## 使用方法
 
-### SQLite Database
+### SQLite 数据库
 
-To use with an SQLite database:
+用于 SQLite 数据库:
 
 ```
 node dist/src/index.js /path/to/your/database.db
 ```
 
-### SQL Server Database
+### SQL Server 数据库
 
-To use with a SQL Server database:
+用于 SQL Server 数据库:
 
 ```
 node dist/src/index.js --sqlserver --server <server-name> --database <database-name> [--user <username> --password <password>]
 ```
 
-Required parameters:
-- `--server`: SQL Server host name or IP address
-- `--database`: Name of the database
+必需参数:
+- `--server`: SQL Server 主机名或 IP 地址
+- `--database`: 数据库名称
 
-Optional parameters:
-- `--user`: Username for SQL Server authentication (if not provided, Windows Authentication will be used)
-- `--password`: Password for SQL Server authentication
-- `--port`: Port number (default: 1433)
+可选参数:
+- `--user`: SQL Server 认证的用户名(如果未提供,将使用 Windows 身份验证)
+- `--password`: SQL Server 认证的密码
+- `--port`: 端口号(默认: 1433)
 
-### PostgreSQL Database
+### PostgreSQL 数据库
 
-To use with a PostgreSQL database:
+用于 PostgreSQL 数据库:
 
 ```
 node dist/src/index.js --postgresql --host <host-name> --database <database-name> [--user <username> --password <password>]
 ```
 
-Required parameters:
-- `--host`: PostgreSQL host name or IP address
-- `--database`: Name of the database
+必需参数:
+- `--host`: PostgreSQL 主机名或 IP 地址
+- `--database`: 数据库名称
 
-Optional parameters:
-- `--user`: Username for PostgreSQL authentication
-- `--password`: Password for PostgreSQL authentication
-- `--port`: Port number (default: 5432)
-- `--ssl`: Enable SSL connection (true/false)
-- `--connection-timeout`: Connection timeout in milliseconds (default: 30000)
+可选参数:
+- `--user`: PostgreSQL 认证的用户名
+- `--password`: PostgreSQL 认证的密码
+- `--port`: 端口号(默认: 5432)
+- `--ssl`: 启用 SSL 连接 (true/false)
+- `--connection-timeout`: 连接超时时间(毫秒,默认: 30000)
 
-### MySQL Database
+### MySQL 数据库
 
-#### Standard Authentication
+#### 标准认证
 
-To use with a MySQL database:
+用于 MySQL 数据库:
 
 ```
 node dist/src/index.js --mysql --host <host-name> --database <database-name> --port <port> [--user <username> --password <password>]
 ```
 
-Required parameters:
-- `--host`: MySQL host name or IP address
-- `--database`: Name of the database
-- `--port`: Port number (default: 3306)
+必需参数:
+- `--host`: MySQL 主机名或 IP 地址
+- `--database`: 数据库名称
+- `--port`: 端口号(默认: 3306)
 
-Optional parameters:
-- `--user`: Username for MySQL authentication
-- `--password`: Password for MySQL authentication
-- `--ssl`: Enable SSL connection (true/false or object)
-- `--connection-timeout`: Connection timeout in milliseconds (default: 30000)
+可选参数:
+- `--user`: MySQL 认证的用户名
+- `--password`: MySQL 认证的密码
+- `--ssl`: 启用 SSL 连接 (true/false 或对象)
+- `--connection-timeout`: 连接超时时间(毫秒,默认: 30000)
 
-#### AWS IAM Authentication
+#### AWS IAM 认证
 
-For Amazon RDS MySQL instances with IAM database authentication:
+对于支持 IAM 数据库认证的 Amazon RDS MySQL 实例:
 
-**Prerequisites:**
-- AWS credentials must be configured (the RDS Signer uses the default credential provider chain)
-- Configure using one of these methods:
-  - `aws configure` (uses default profile)
-  - `AWS_PROFILE=myprofile` environment variable
-  - `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables
-  - IAM roles (if running on EC2)
+**前置条件:**
+- 必须配置 AWS 凭据(RDS 签名者使用默认凭据提供程序链)
+- 使用以下方法之一配置:
+  - `aws configure`(使用默认配置文件)
+  - `AWS_PROFILE=myprofile` 环境变量
+  - `AWS_ACCESS_KEY_ID` 和 `AWS_SECRET_ACCESS_KEY` 环境变量
+  - IAM 角色(如果在 EC2 上运行)
 
 ```
 node dist/src/index.js --mysql --aws-iam-auth --host <rds-endpoint> --database <database-name> --user <aws-username> --aws-region <region>
 ```
 
-Required parameters:
-- `--host`: RDS endpoint hostname
-- `--database`: Name of the database
-- `--aws-iam-auth`: Enable AWS IAM authentication
-- `--user`: AWS IAM username (also the database user)
-- `--aws-region`: AWS region where RDS instance is located
+必需参数:
+- `--host`: RDS 端点主机名
+- `--database`: 数据库名称
+- `--aws-iam-auth`: 启用 AWS IAM 认证
+- `--user`: AWS IAM 用户名(也是数据库用户)
+- `--aws-region`: RDS 实例所在的 AWS 区域
 
-Note: SSL is automatically enabled for AWS IAM authentication
+注意: AWS IAM 认证会自动启用 SSL
 
-## Configuring Claude Desktop
+## 配置 Claude Desktop
 
-### Direct Usage Configuration
+### 直接使用配置
 
-If you installed the package globally, configure Claude Desktop with:
+如果您全局安装了包,使用以下配置配置 Claude Desktop:
 
 ```json
 {
@@ -209,9 +209,9 @@ If you installed the package globally, configure Claude Desktop with:
 }
 ```
 
-### Local Development Configuration
+### 本地开发配置
 
-For local development, configure Claude Desktop to use your locally built version:
+对于本地开发,配置 Claude Desktop 使用您本地构建的版本:
 
 ```json
 {
@@ -219,7 +219,7 @@ For local development, configure Claude Desktop to use your locally built versio
     "sqlite": {
       "command": "node",
       "args": [
-        "/absolute/path/to/mcp-database-server/dist/src/index.js", 
+        "/absolute/path/to/mcp-database-server/dist/src/index.js",
         "/path/to/your/database.db"
       ]
     },
@@ -273,56 +273,56 @@ For local development, configure Claude Desktop to use your locally built versio
 }
 ```
 
-The Claude Desktop configuration file is typically located at:
+Claude Desktop 配置文件通常位于:
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 - Linux: `~/.config/Claude/claude_desktop_config.json`
 
-## Available Database Tools
+## 可用的数据库工具
 
-The MCP Database Server provides the following tools that Claude can use:
+MCP 数据库服务器提供以下可供 Claude 使用的工具:
 
-| Tool | Description | Required Parameters |
+| 工具 | 描述 | 必需参数 |
 |------|-------------|---------------------|
-| `read_query` | Execute SELECT queries to read data | `query`: SQL SELECT statement |
-| `write_query` | Execute INSERT, UPDATE, or DELETE queries | `query`: SQL modification statement |
-| `create_table` | Create new tables in the database | `query`: CREATE TABLE statement |
-| `alter_table` | Modify existing table schema | `query`: ALTER TABLE statement |
-| `drop_table` | Remove a table from the database | `table_name`: Name of table<br>`confirm`: Safety flag (must be true) |
-| `list_tables` | Get a list of all tables | None |
-| `describe_table` | View schema information for a table | `table_name`: Name of table |
-| `export_query` | Export query results as CSV/JSON | `query`: SQL SELECT statement<br>`format`: "csv" or "json" |
-| `append_insight` | Add a business insight to memo | `insight`: Text of insight |
-| `list_insights` | List all business insights | None |
+| `read_query` | 执行 SELECT 查询以读取数据 | `query`: SQL SELECT 语句 |
+| `write_query` | 执行 INSERT、UPDATE 或 DELETE 查询 | `query`: SQL 修改语句 |
+| `create_table` | 在数据库中创建新表 | `query`: CREATE TABLE 语句 |
+| `alter_table` | 修改现有表架构 | `query`: ALTER TABLE 语句 |
+| `drop_table` | 从数据库中删除表 | `table_name`: 表名<br>`confirm`: 安全标志(必须为 true) |
+| `list_tables` | 获取所有表的列表 | 无 |
+| `describe_table` | 查看表的架构信息 | `table_name`: 表名 |
+| `export_query` | 将查询结果导出为 CSV/JSON | `query`: SQL SELECT 语句<br>`format`: "csv" 或 "json" |
+| `append_insight` | 添加业务洞察到备忘录 | `insight`: 洞察文本 |
+| `list_insights` | 列出所有业务洞察 | 无 |
 
-For practical examples of how to use these tools with Claude, see [Usage Examples](docs/usage-examples.md).
+有关如何在 Claude 中使用这些工具的实际示例,请参阅[使用示例](docs/usage-examples.md)。
 
-## Additional Documentation
+## 附加文档
 
-- [SQL Server Setup Guide](docs/sql-server-setup.md): Details on connecting to SQL Server databases
-- [PostgreSQL Setup Guide](docs/postgresql-setup.md): Details on connecting to PostgreSQL databases
-- [Usage Examples](docs/usage-examples.md): Example queries and commands to use with Claude
+- [SQL Server 设置指南](docs/sql-server-setup.md): 连接到 SQL Server 数据库的详细信息
+- [PostgreSQL 设置指南](docs/postgresql-setup.md): 连接到 PostgreSQL 数据库的详细信息
+- [使用示例](docs/usage-examples.md): 与 Claude 一起使用的示例查询和命令
 
-## Development
+## 开发
 
-To run the server in development mode:
+以开发模式运行服务器:
 
 ```
 npm run dev
 ```
 
-To watch for changes during development:
+在开发期间监视更改:
 
 ```
 npm run watch
 ```
 
-## Requirements
+## 系统要求
 
 - Node.js 18+
-- For SQL Server connectivity: SQL Server 2012 or later
-- For PostgreSQL connectivity: PostgreSQL 9.5 or later
+- SQL Server 连接: SQL Server 2012 或更高版本
+- PostgreSQL 连接: PostgreSQL 9.5 或更高版本
 
-## License
+## 许可证
 
 MIT
