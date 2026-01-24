@@ -3,7 +3,7 @@ import mysql from "mysql2/promise";
 import { Signer } from "@aws-sdk/rds-signer";
 
 /**
- * MySQL database adapter implementation
+ * MySQL 数据库适配器实现
  */
 export class MysqlAdapter implements DbAdapter {
   private connection: mysql.Connection | null = null;
@@ -40,16 +40,16 @@ export class MysqlAdapter implements DbAdapter {
     if (typeof connectionInfo.ssl === 'object' || typeof connectionInfo.ssl === 'string') {
       this.config.ssl = connectionInfo.ssl;
     } else if (connectionInfo.ssl === true) {
-      // For AWS IAM authentication, configure SSL appropriately for RDS
+      // 对于 AWS IAM 认证,为 RDS 适当配置 SSL
       if (this.awsIamAuth) {
         this.config.ssl = {
-          rejectUnauthorized: false // AWS RDS handles certificate validation
+          rejectUnauthorized: false // AWS RDS 处理证书验证
         };
       } else {
         this.config.ssl = {};
       }
     }
-    // Validate port
+    // 验证端口号
     if (connectionInfo.port && typeof connectionInfo.port !== 'number') {
       const parsedPort = parseInt(connectionInfo.port as any, 10);
       if (isNaN(parsedPort)) {
@@ -57,12 +57,12 @@ export class MysqlAdapter implements DbAdapter {
       }
       this.config.port = parsedPort;
     }
-    // Log the port for debugging
+    // 记录端口用于调试
     console.error(`[DEBUG] MySQL connection will use port: ${this.config.port}`);
   }
 
   /**
-   * Generate AWS RDS authentication token
+   * 生成 AWS RDS 认证令牌
    */
   private async generateAwsAuthToken(): Promise<string> {
     if (!this.awsRegion) {
@@ -93,20 +93,20 @@ export class MysqlAdapter implements DbAdapter {
   }
 
   /**
-   * Initialize MySQL connection
+   * 初始化 MySQL 连接
    */
   async init(): Promise<void> {
     try {
       console.info(`[INFO] Connecting to MySQL: ${this.host}, Database: ${this.database}`);
       
-      // Handle AWS IAM authentication
+      // 处理 AWS IAM 认证
       if (this.awsIamAuth) {
         console.info(`[INFO] Using AWS IAM authentication for user: ${this.config.user}`);
         
         try {
           const authToken = await this.generateAwsAuthToken();
           
-          // Create a new config with the generated token as password
+          // 使用生成的令牌作为密码创建新配置
           const awsConfig = {
             ...this.config,
             password: authToken
@@ -133,7 +133,7 @@ export class MysqlAdapter implements DbAdapter {
   }
 
   /**
-   * Execute a SQL query and get all results
+   * 执行 SQL 查询并获取所有结果
    */
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.connection) {
@@ -148,7 +148,7 @@ export class MysqlAdapter implements DbAdapter {
   }
 
   /**
-   * Execute a SQL query that modifies data
+   * 执行修改数据的 SQL 查询
    */
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.connection) {
@@ -165,7 +165,7 @@ export class MysqlAdapter implements DbAdapter {
   }
 
   /**
-   * Execute multiple SQL statements
+   * 执行多条 SQL 语句
    */
   async exec(query: string): Promise<void> {
     if (!this.connection) {
@@ -179,7 +179,7 @@ export class MysqlAdapter implements DbAdapter {
   }
 
   /**
-   * Close the database connection
+   * 关闭数据库连接
    */
   async close(): Promise<void> {
     if (this.connection) {
@@ -189,7 +189,7 @@ export class MysqlAdapter implements DbAdapter {
   }
 
   /**
-   * Get database metadata
+   * 获取数据库元数据
    */
   getMetadata(): { name: string; type: string; server: string; database: string } {
     return {
@@ -201,17 +201,17 @@ export class MysqlAdapter implements DbAdapter {
   }
 
   /**
-   * Get database-specific query for listing tables
+   * 获取列出表的数据库特定查询
    */
   getListTablesQuery(): string {
     return `SELECT table_name AS name FROM information_schema.tables WHERE table_schema = '${this.database}'`;
   }
 
   /**
-   * Get database-specific query for describing a table
+   * 获取描述表的数据库特定查询
    */
   getDescribeTableQuery(tableName: string): string {
-    // MySQL DESCRIBE returns columns with different names, so we use a query that matches the expected format
+    // MySQL DESCRIBE 返回具有不同名称的列,因此我们使用与预期格式匹配的查询
     return `
       SELECT
         COLUMN_NAME as name,
