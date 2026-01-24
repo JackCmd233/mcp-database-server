@@ -9,14 +9,14 @@ import {
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-// Import database utils
+// 导入数据库工具模块
 import { initDatabase, closeDatabase, getDatabaseMetadata } from './db/index.js';
 
-// Import handlers
+// 导入处理器
 import { handleListResources, handleReadResource } from './handlers/resourceHandlers.js';
 import { handleListTools, handleToolCall } from './handlers/toolHandlers.js';
 
-// Setup a logger that uses stderr instead of stdout to avoid interfering with MCP communications
+// 设置使用 stderr 而不是 stdout 的日志记录器,避免干扰 MCP 通信
 const logger = {
   log: (...args: any[]) => console.error('[INFO]', ...args),
   error: (...args: any[]) => console.error('[ERROR]', ...args),
@@ -24,7 +24,7 @@ const logger = {
   info: (...args: any[]) => console.error('[INFO]', ...args),
 };
 
-// Configure the server
+// 配置服务器
 const server = new Server(
   {
     name: "executeautomation/database-server",
@@ -38,7 +38,7 @@ const server = new Server(
   },
 );
 
-// Parse command line arguments
+// 解析命令行参数
 const args = process.argv.slice(2);
 if (args.length === 0) {
   logger.error("Please provide database connection information");
@@ -50,11 +50,11 @@ if (args.length === 0) {
   process.exit(1);
 }
 
-// Parse arguments to determine database type and connection info
+// 解析参数以确定数据库类型和连接信息
 let dbType = 'sqlite';
 let connectionInfo: any = null;
 
-// Check if using SQL Server
+// 检查是否使用 SQL Server
 if (args.includes('--sqlserver')) {
   dbType = 'sqlserver';
   connectionInfo = {
@@ -64,7 +64,7 @@ if (args.includes('--sqlserver')) {
     password: undefined
   };
   
-  // Parse SQL Server connection parameters
+  // 解析 SQL Server 连接参数
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--server' && i + 1 < args.length) {
       connectionInfo.server = args[i + 1];
@@ -79,13 +79,13 @@ if (args.includes('--sqlserver')) {
     }
   }
   
-  // Validate SQL Server connection info
+  // 验证 SQL Server 连接信息
   if (!connectionInfo.server || !connectionInfo.database) {
     logger.error("Error: SQL Server requires --server and --database parameters");
     process.exit(1);
   }
-} 
-// Check if using PostgreSQL
+}
+// 检查是否使用 PostgreSQL
 else if (args.includes('--postgresql') || args.includes('--postgres')) {
   dbType = 'postgresql';
   connectionInfo = {
@@ -98,7 +98,7 @@ else if (args.includes('--postgresql') || args.includes('--postgres')) {
     connectionTimeout: undefined
   };
   
-  // Parse PostgreSQL connection parameters
+  // 解析 PostgreSQL 连接参数
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--host' && i + 1 < args.length) {
       connectionInfo.host = args[i + 1];
@@ -117,13 +117,13 @@ else if (args.includes('--postgresql') || args.includes('--postgres')) {
     }
   }
   
-  // Validate PostgreSQL connection info
+  // 验证 PostgreSQL 连接信息
   if (!connectionInfo.host || !connectionInfo.database) {
     logger.error("Error: PostgreSQL requires --host and --database parameters");
     process.exit(1);
   }
 }
-// Check if using MySQL
+// 检查是否使用 MySQL
 else if (args.includes('--mysql')) {
   dbType = 'mysql';
   connectionInfo = {
@@ -137,7 +137,7 @@ else if (args.includes('--mysql')) {
     awsIamAuth: false,
     awsRegion: undefined
   };
-  // Parse MySQL connection parameters
+  // 解析 MySQL 连接参数
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--host' && i + 1 < args.length) {
       connectionInfo.host = args[i + 1];
@@ -162,13 +162,13 @@ else if (args.includes('--mysql')) {
       connectionInfo.awsRegion = args[i + 1];
     }
   }
-  // Validate MySQL connection info
+  // 验证 MySQL 连接信息
   if (!connectionInfo.host || !connectionInfo.database) {
     logger.error("Error: MySQL requires --host and --database parameters");
     process.exit(1);
   }
-  
-  // Additional validation for AWS IAM authentication
+
+  // AWS IAM 认证的额外验证
   if (connectionInfo.awsIamAuth) {
     if (!connectionInfo.user) {
       logger.error("Error: AWS IAM authentication requires --user parameter");
@@ -178,18 +178,18 @@ else if (args.includes('--mysql')) {
       logger.error("Error: AWS IAM authentication requires --aws-region parameter");
       process.exit(1);
     }
-    // Automatically enable SSL for AWS IAM authentication (required)
+    // 为 AWS IAM 认证自动启用 SSL (必需)
     connectionInfo.ssl = true;
     logger.info("AWS IAM authentication enabled - SSL automatically configured");
   }
 } else {
-  // SQLite mode (default)
+  // SQLite 模式(默认)
   dbType = 'sqlite';
-  connectionInfo = args[0]; // First argument is the SQLite file path
+  connectionInfo = args[0]; // 第一个参数是 SQLite 文件路径
   logger.info(`Using SQLite database at path: ${connectionInfo}`);
 }
 
-// Set up request handlers
+// 设置请求处理器
 server.setRequestHandler(ListResourcesRequestSchema, async () => {
   return await handleListResources();
 });
@@ -206,7 +206,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   return await handleToolCall(request.params.name, request.params.arguments);
 });
 
-// Handle shutdown gracefully
+// 优雅处理关闭信号
 process.on('SIGINT', async () => {
   logger.info('Shutting down gracefully...');
   await closeDatabase();
@@ -219,7 +219,7 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-// Add global error handler
+// 添加全局错误处理器
 process.on('uncaughtException', (error) => {
   logger.error('Uncaught exception:', error);
 });
@@ -229,7 +229,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 /**
- * Start the server
+ * 启动服务器
  */
 async function runServer() {
   try {
@@ -244,16 +244,16 @@ async function runServer() {
       logger.info(`Host: ${connectionInfo.host}, Database: ${connectionInfo.database}`);
     }
     
-    // Initialize the database
+    // 初始化数据库
     await initDatabase(connectionInfo, dbType);
-    
+
     const dbInfo = getDatabaseMetadata();
     logger.info(`Connected to ${dbInfo.name} database`);
-    
+
     logger.info('Starting MCP server...');
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    
+
     logger.info('Server running. Press Ctrl+C to exit.');
   } catch (error) {
     logger.error("Failed to initialize:", error);
@@ -261,7 +261,7 @@ async function runServer() {
   }
 }
 
-// Start the server
+// 启动服务器
 runServer().catch(error => {
   logger.error("Server initialization failed:", error);
   process.exit(1);
