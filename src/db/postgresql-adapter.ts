@@ -2,7 +2,7 @@ import { DbAdapter } from "./adapter.js";
 import pg from 'pg';
 
 /**
- * PostgreSQL database adapter implementation
+ * PostgreSQL 数据库适配器实现
  */
 export class PostgresqlAdapter implements DbAdapter {
   private client: pg.Client | null = null;
@@ -23,7 +23,7 @@ export class PostgresqlAdapter implements DbAdapter {
     this.host = connectionInfo.host;
     this.database = connectionInfo.database;
     
-    // Create PostgreSQL connection config
+    // 创建 PostgreSQL 连接配置
     this.config = {
       host: connectionInfo.host,
       database: connectionInfo.database,
@@ -31,13 +31,13 @@ export class PostgresqlAdapter implements DbAdapter {
       user: connectionInfo.user,
       password: connectionInfo.password,
       ssl: connectionInfo.ssl,
-      // Add connection timeout if provided (in milliseconds)
+      // 如果提供了连接超时,则添加(以毫秒为单位)
       connectionTimeoutMillis: connectionInfo.connectionTimeout || 30000,
     };
   }
 
   /**
-   * Initialize PostgreSQL connection
+   * 初始化 PostgreSQL 连接
    */
   async init(): Promise<void> {
     try {
@@ -61,10 +61,10 @@ export class PostgresqlAdapter implements DbAdapter {
   }
 
   /**
-   * Execute a SQL query and get all results
-   * @param query SQL query to execute
-   * @param params Query parameters
-   * @returns Promise with query results
+   * 执行 SQL 查询并获取所有结果
+   * @param query 要执行的 SQL 查询
+   * @param params 查询参数
+   * @returns 包含查询结果的 Promise
    */
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.client) {
@@ -72,7 +72,7 @@ export class PostgresqlAdapter implements DbAdapter {
     }
 
     try {
-      // PostgreSQL uses $1, $2, etc. for parameterized queries
+      // PostgreSQL 使用 $1, $2 等作为参数化查询的占位符
       const preparedQuery = query.replace(/\?/g, (_, i) => `$${i + 1}`);
       
       const result = await this.client.query(preparedQuery, params);
@@ -83,10 +83,10 @@ export class PostgresqlAdapter implements DbAdapter {
   }
 
   /**
-   * Execute a SQL query that modifies data
-   * @param query SQL query to execute
-   * @param params Query parameters
-   * @returns Promise with result info
+   * 执行修改数据的 SQL 查询
+   * @param query 要执行的 SQL 查询
+   * @param params 查询参数
+   * @returns 包含结果信息的 Promise
    */
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.client) {
@@ -94,15 +94,15 @@ export class PostgresqlAdapter implements DbAdapter {
     }
 
     try {
-      // Replace ? with numbered parameters
+      // 将 ? 替换为编号参数
       const preparedQuery = query.replace(/\?/g, (_, i) => `$${i + 1}`);
       
       let lastID = 0;
       let changes = 0;
-      
-      // For INSERT queries, try to get the inserted ID
+
+      // 对于 INSERT 查询,尝试获取插入的 ID
       if (query.trim().toUpperCase().startsWith('INSERT')) {
-        // Add RETURNING clause to get the inserted ID if it doesn't already have one
+        // 如果查询中没有 RETURNING 子句,则添加以获取插入的 ID
         const returningQuery = preparedQuery.includes('RETURNING') 
           ? preparedQuery 
           : `${preparedQuery} RETURNING id`;
@@ -122,9 +122,9 @@ export class PostgresqlAdapter implements DbAdapter {
   }
 
   /**
-   * Execute multiple SQL statements
-   * @param query SQL statements to execute
-   * @returns Promise that resolves when execution completes
+   * 执行多条 SQL 语句
+   * @param query 要执行的 SQL 语句
+   * @returns 执行完成后解析的 Promise
    */
   async exec(query: string): Promise<void> {
     if (!this.client) {
@@ -139,7 +139,7 @@ export class PostgresqlAdapter implements DbAdapter {
   }
 
   /**
-   * Close the database connection
+   * 关闭数据库连接
    */
   async close(): Promise<void> {
     if (this.client) {
@@ -149,7 +149,7 @@ export class PostgresqlAdapter implements DbAdapter {
   }
 
   /**
-   * Get database metadata
+   * 获取数据库元数据
    */
   getMetadata(): { name: string, type: string, server: string, database: string } {
     return {
@@ -161,15 +161,15 @@ export class PostgresqlAdapter implements DbAdapter {
   }
 
   /**
-   * Get database-specific query for listing tables
+   * 获取用于列出表的数据库特定查询
    */
   getListTablesQuery(): string {
     return "SELECT table_name as name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name";
   }
 
   /**
-   * Get database-specific query for describing a table
-   * @param tableName Table name
+   * 获取用于描述表结构的数据库特定查询
+   * @param tableName 表名
    */
   getDescribeTableQuery(tableName: string): string {
     return `
