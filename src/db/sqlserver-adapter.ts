@@ -314,7 +314,12 @@ export class SqlServerAdapter implements DbAdapter {
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS pk ON kcu.CONSTRAINT_NAME = pk.CONSTRAINT_NAME AND pk.CONSTRAINT_TYPE = 'PRIMARY KEY'
       LEFT JOIN
         sys.extended_properties ep
-          ON ep.major_id = OBJECT_ID(SCHEMA_NAME(c.TABLE_SCHEMA) + '.' + c.TABLE_NAME)
+          ON ep.major_id = (
+            SELECT t.object_id
+            FROM sys.tables t
+            INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
+            WHERE t.name = '${tableName}' AND s.name = c.TABLE_SCHEMA
+          )
           AND ep.minor_id = c.ORDINAL_POSITION
           AND ep.name = 'MS_Description'
       WHERE
