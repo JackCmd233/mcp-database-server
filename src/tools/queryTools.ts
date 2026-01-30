@@ -9,13 +9,13 @@ import { formatErrorResponse, formatSuccessResponse, convertToCSV } from '../uti
 export async function readQuery(query: string) {
   try {
     if (!query.trim().toLowerCase().startsWith("select")) {
-      throw new Error("Only SELECT queries are allowed with read_query");
+      throw new Error("read_query 只允许执行 SELECT 查询");
     }
 
     const result = await dbAll(query);
     return formatSuccessResponse(result);
   } catch (error: any) {
-    throw new Error(`SQL Error: ${error.message}`);
+    throw new Error(`SQL 错误: ${error.message}`);
   }
 }
 
@@ -29,17 +29,17 @@ export async function writeQuery(query: string) {
     const lowerQuery = query.trim().toLowerCase();
     
     if (lowerQuery.startsWith("select")) {
-      throw new Error("Use read_query for SELECT operations");
+      throw new Error("SELECT 操作请使用 read_query");
     }
-    
+
     if (!(lowerQuery.startsWith("insert") || lowerQuery.startsWith("update") || lowerQuery.startsWith("delete"))) {
-      throw new Error("Only INSERT, UPDATE, or DELETE operations are allowed with write_query");
+      throw new Error("write_query 只允许执行 INSERT、UPDATE 或 DELETE 操作");
     }
 
     const result = await dbRun(query);
     return formatSuccessResponse({ affected_rows: result.changes });
   } catch (error: any) {
-    throw new Error(`SQL Error: ${error.message}`);
+    throw new Error(`SQL 错误: ${error.message}`);
   }
 }
 
@@ -52,7 +52,7 @@ export async function writeQuery(query: string) {
 export async function exportQuery(query: string, format: string) {
   try {
     if (!query.trim().toLowerCase().startsWith("select")) {
-      throw new Error("Only SELECT queries are allowed with export_query");
+      throw new Error("export_query 只允许执行 SELECT 查询");
     }
 
     const result = await dbAll(query);
@@ -69,9 +69,9 @@ export async function exportQuery(query: string, format: string) {
     } else if (format === "json") {
       return formatSuccessResponse(result);
     } else {
-      throw new Error("Unsupported export format. Use 'csv' or 'json'");
+      throw new Error("不支持的导出格式。请使用 'csv' 或 'json'");
     }
   } catch (error: any) {
-    throw new Error(`Export Error: ${error.message}`);
+    throw new Error(`导出错误: ${error.message}`);
   }
 } 

@@ -9,7 +9,7 @@ import { formatSuccessResponse } from '../utils/formatUtils.js';
 export async function appendInsight(insight: string) {
   try {
     if (!insight) {
-      throw new Error("Insight text is required");
+      throw new Error("洞察内容不能为空");
     }
 
     // 如果 insights 表不存在则创建
@@ -27,9 +27,9 @@ export async function appendInsight(insight: string) {
       [insight]
     );
     
-    return formatSuccessResponse({ success: true, message: "Insight added" });
+    return formatSuccessResponse({ success: true, message: "洞察已添加" });
   } catch (error: any) {
-    throw new Error(`Error adding insight: ${error.message}`);
+    throw new Error(`添加洞察失败: ${error.message}`);
   }
 }
 
@@ -59,6 +59,6 @@ export async function listInsights() {
     const insights = await dbAll("SELECT * FROM mcp_insights ORDER BY created_at DESC");
     return formatSuccessResponse(insights);
   } catch (error: any) {
-    throw new Error(`Error listing insights: ${error.message}`);
+    throw new Error(`列出洞察失败: ${error.message}`);
   }
 } 
