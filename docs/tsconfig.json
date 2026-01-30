@@ -1,5 +1,5 @@
 {
-  // This file is not used in compilation. It is here just for a nice editor experience.
+  // 此文件不用于编译。它只是为了让编辑器体验更好。
   "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
     "baseUrl": "."

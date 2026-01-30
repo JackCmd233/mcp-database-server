@@ -8,7 +8,7 @@ const directoriesToRemove = [
   './docs/testing-videos',
 ];
 
-// Function to delete a directory recursively
+// 递归删除目录的函数
 function deleteFolderRecursive(directoryPath) {
   if (fs.existsSync(directoryPath)) {
     fs.readdirSync(directoryPath).forEach((file) => {
@@ -24,13 +24,13 @@ function deleteFolderRecursive(directoryPath) {
   }
 }
 
-// Delete each directory
+// 删除每个目录
 directoriesToRemove.forEach((directory) => {
   try {
     deleteFolderRecursive(directory);
   } catch (error) {
-    console.error(`Error deleting ${directory}:`, error);
+    console.error(`删除 ${directory} 时出错:`, error);
   }
 });
 
-console.log('Cleanup completed!'); 
+console.log('清理完成!'); 

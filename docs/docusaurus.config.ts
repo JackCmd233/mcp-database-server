@@ -2,30 +2,30 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
-// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
+// 此代码在 Node.js 中运行 - 不要在此使用客户端代码（浏览器 API、JSX...）
 
 const config: Config = {
   title: 'MCP Database Server',
   tagline: 'Fastest way to interact with your Database such as SQL Server, SQLite and PostgreSQL',
   favicon: 'img/favicon.ico',
 
-  // Set the production url of your site here
+  // 在此设置您网站的生产环境 URL
   url: 'https://executeautomation.github.io/',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
+  // 设置服务您网站的 /<baseUrl>/ 路径名
+  // 对于 GitHub pages 部署，通常是 '/<projectName>/'
   baseUrl: '/mcp-database-server',
 
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'executeautomation', // Usually your GitHub org/user name.
-  projectName: 'mcp-database-server', // Usually your repo name.
+  // GitHub pages 部署配置
+  // 如果您不使用 GitHub pages，则不需要这些
+  organizationName: 'executeautomation', // 通常是您的 GitHub 组织/用户名
+  projectName: 'mcp-database-server', // 通常是您的仓库名称
 
   onBrokenLinks: 'ignore',
   onBrokenMarkdownLinks: 'warn',
 
-  // Even if you don't use internationalization, you can use this field to set
-  // useful metadata like html lang. For example, if your site is Chinese, you
-  // may want to replace "en" with "zh-Hans".
+  // 即使您不使用国际化，也可以使用此字段设置
+  // 有用的元数据，如 html lang。例如，如果您的站点是中文，您
+  // 可能希望将 "en" 替换为 "zh-Hans"。
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -38,8 +38,8 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
+          // 请将其更改为您的仓库
+          // 删除此项以移除"编辑此页面"链接
           editUrl:
             'https://github.com/executeautomation/mcp-database-server/tree/main/docs/',
         },
@@ -51,7 +51,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    // Replace with your project's social card
+    // 替换为您项目的社会化卡片
     image: 'img/EA-Icon.svg',
     navbar: {
       title: 'MCP Database Server',
