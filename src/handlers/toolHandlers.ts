@@ -14,7 +14,7 @@ export function handleListTools() {
     tools: [
       {
         name: "read_query",
-        description: "Execute SELECT queries to read data from the database",
+        description: "执行 SELECT 查询以从数据库读取数据",
         inputSchema: {
           type: "object",
           properties: {
@@ -25,7 +25,7 @@ export function handleListTools() {
       },
       {
         name: "write_query",
-        description: "Execute INSERT, UPDATE, or DELETE queries",
+        description: "执行 INSERT、UPDATE 或 DELETE 查询",
         inputSchema: {
           type: "object",
           properties: {
@@ -36,7 +36,7 @@ export function handleListTools() {
       },
       {
         name: "create_table",
-        description: "Create new tables in the database",
+        description: "在数据库中创建新表",
         inputSchema: {
           type: "object",
           properties: {
@@ -47,7 +47,7 @@ export function handleListTools() {
       },
       {
         name: "alter_table",
-        description: "Modify existing table schema (add columns, rename tables, etc.)",
+        description: "修改现有表结构（添加列、重命名表等）",
         inputSchema: {
           type: "object",
           properties: {
@@ -58,7 +58,7 @@ export function handleListTools() {
       },
       {
         name: "drop_table",
-        description: "Remove a table from the database with safety confirmation",
+        description: "从数据库中删除表（需要安全确认）",
         inputSchema: {
           type: "object",
           properties: {
@@ -70,7 +70,7 @@ export function handleListTools() {
       },
       {
         name: "export_query",
-        description: "Export query results to various formats (CSV, JSON)",
+        description: "将查询结果导出为各种格式（CSV、JSON）",
         inputSchema: {
           type: "object",
           properties: {
@@ -82,7 +82,7 @@ export function handleListTools() {
       },
       {
         name: "list_tables",
-        description: "Get a list of all tables in the database",
+        description: "获取数据库中所有表的列表",
         inputSchema: {
           type: "object",
           properties: {},
@@ -90,7 +90,7 @@ export function handleListTools() {
       },
       {
         name: "describe_table",
-        description: "View schema information for a specific table",
+        description: "查看特定表的结构信息",
         inputSchema: {
           type: "object",
           properties: {
@@ -101,7 +101,7 @@ export function handleListTools() {
       },
       {
         name: "append_insight",
-        description: "Add a business insight to the memo",
+        description: "添加业务洞察到备忘录",
         inputSchema: {
           type: "object",
           properties: {
@@ -112,7 +112,7 @@ export function handleListTools() {
       },
       {
         name: "list_insights",
-        description: "List all business insights in the memo",
+        description: "列出备忘录中的所有业务洞察",
         inputSchema: {
           type: "object",
           properties: {},
@@ -162,7 +162,7 @@ export async function handleToolCall(name: string, args: any) {
         return await listInsights();
 
       default:
-        throw new Error(`Unknown tool: ${name}`);
+        throw new Error(`未知的工具: ${name}`);
     }
   } catch (error: any) {
     return formatErrorResponse(error);

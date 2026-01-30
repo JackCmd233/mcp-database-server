@@ -33,7 +33,7 @@ export async function handleListResources() {
       })),
     };
   } catch (error: any) {
-    throw new Error(`Error listing resources: ${error.message}`);
+    throw new Error(`列出资源失败: ${error.message}`);
   }
 }
 
@@ -52,7 +52,7 @@ export async function handleReadResource(uri: string) {
     const tableName = pathComponents.pop();
 
     if (schema !== SCHEMA_PATH) {
-      throw new Error("Invalid resource URI");
+      throw new Error("无效的资源 URI");
     }
 
     // 使用适配器特定的查询来描述表结构
@@ -73,6 +73,6 @@ export async function handleReadResource(uri: string) {
       ],
     };
   } catch (error: any) {
-    throw new Error(`Error reading resource: ${error.message}`);
+    throw new Error(`读取资源失败: ${error.message}`);
   }
 } 
