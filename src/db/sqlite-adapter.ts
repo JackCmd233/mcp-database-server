@@ -140,6 +140,6 @@ export class SqliteAdapter implements DbAdapter {
    * @param tableName 表名
    */
   getDescribeTableQuery(tableName: string): string {
-    return `PRAGMA table_info(${tableName})`;
+    return `SELECT name, type, notnull, pk, dflt_value, NULL as comment FROM pragma_table_info('${tableName}')`;
   }
 } 

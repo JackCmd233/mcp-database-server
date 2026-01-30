@@ -173,24 +173,34 @@ export class PostgresqlAdapter implements DbAdapter {
    */
   getDescribeTableQuery(tableName: string): string {
     return `
-      SELECT 
+      SELECT
         c.column_name as name,
         c.data_type as type,
         CASE WHEN c.is_nullable = 'NO' THEN 1 ELSE 0 END as notnull,
         CASE WHEN pk.constraint_name IS NOT NULL THEN 1 ELSE 0 END as pk,
-        c.column_default as dflt_value
-      FROM 
+        c.column_default as dflt_value,
+        pgd.description AS comment
+      FROM
         information_schema.columns c
-      LEFT JOIN 
-        information_schema.key_column_usage kcu 
+      LEFT JOIN
+        information_schema.key_column_usage kcu
         ON c.table_name = kcu.table_name AND c.column_name = kcu.column_name
-      LEFT JOIN 
-        information_schema.table_constraints pk 
+      LEFT JOIN
+        information_schema.table_constraints pk
         ON kcu.constraint_name = pk.constraint_name AND pk.constraint_type = 'PRIMARY KEY'
-      WHERE 
+      LEFT JOIN
+        pg_catalog.pg_class pgc
+        ON pgc.relname = c.table_name
+      LEFT JOIN
+        pg_catalog.pg_attribute pga
+        ON pga.attrelid = pgc.oid AND pga.attname = c.column_name
+      LEFT JOIN
+        pg_catalog.pg_description pgd
+        ON pgd.objoid = pgc.oid AND pgd.objsubid = pga.attnum
+      WHERE
         c.table_name = '${tableName}'
         AND c.table_schema = 'public'
-      ORDER BY 
+      ORDER BY
         c.ordinal_position
     `;
   }

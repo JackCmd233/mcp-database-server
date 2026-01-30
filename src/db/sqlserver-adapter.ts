@@ -299,21 +299,27 @@ export class SqlServerAdapter implements DbAdapter {
    */
   getDescribeTableQuery(tableName: string): string {
     return `
-      SELECT 
+      SELECT
         c.COLUMN_NAME as name,
         c.DATA_TYPE as type,
         CASE WHEN c.IS_NULLABLE = 'NO' THEN 1 ELSE 0 END as notnull,
         CASE WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN 1 ELSE 0 END as pk,
-        c.COLUMN_DEFAULT as dflt_value
-      FROM 
+        c.COLUMN_DEFAULT as dflt_value,
+        ep.value AS comment
+      FROM
         INFORMATION_SCHEMA.COLUMNS c
-      LEFT JOIN 
+      LEFT JOIN
         INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON c.TABLE_NAME = kcu.TABLE_NAME AND c.COLUMN_NAME = kcu.COLUMN_NAME
-      LEFT JOIN 
+      LEFT JOIN
         INFORMATION_SCHEMA.TABLE_CONSTRAINTS pk ON kcu.CONSTRAINT_NAME = pk.CONSTRAINT_NAME AND pk.CONSTRAINT_TYPE = 'PRIMARY KEY'
-      WHERE 
+      LEFT JOIN
+        sys.extended_properties ep
+          ON ep.major_id = OBJECT_ID(SCHEMA_NAME(c.TABLE_SCHEMA) + '.' + c.TABLE_NAME)
+          AND ep.minor_id = c.ORDINAL_POSITION
+          AND ep.name = 'MS_Description'
+      WHERE
         c.TABLE_NAME = '${tableName}'
-      ORDER BY 
+      ORDER BY
         c.ORDINAL_POSITION
     `;
   }

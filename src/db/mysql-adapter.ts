@@ -218,7 +218,8 @@ export class MysqlAdapter implements DbAdapter {
         DATA_TYPE as type,
         CASE WHEN IS_NULLABLE = 'NO' THEN 1 ELSE 0 END as notnull,
         CASE WHEN COLUMN_KEY = 'PRI' THEN 1 ELSE 0 END as pk,
-        COLUMN_DEFAULT as dflt_value
+        COLUMN_DEFAULT as dflt_value,
+        COLUMN_COMMENT as comment
       FROM
         INFORMATION_SCHEMA.COLUMNS
       WHERE
