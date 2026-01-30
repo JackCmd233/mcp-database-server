@@ -41,12 +41,12 @@ const server = new Server(
 // 解析命令行参数
 const args = process.argv.slice(2);
 if (args.length === 0) {
-  logger.error("Please provide database connection information");
-  logger.error("Usage for SQLite: node index.js <database_file_path>");
-  logger.error("Usage for SQL Server: node index.js --sqlserver --server <server> --database <database> [--user <user> --password <password>]");
-  logger.error("Usage for PostgreSQL: node index.js --postgresql --host <host> --database <database> [--user <user> --password <password> --port <port>]");
-  logger.error("Usage for MySQL: node index.js --mysql --host <host> --database <database> [--user <user> --password <password> --port <port>]");
-  logger.error("Usage for MySQL with AWS IAM: node index.js --mysql --aws-iam-auth --host <rds-endpoint> --database <database> --user <aws-username> --aws-region <region>");
+  logger.error("请提供数据库连接信息");
+  logger.error("SQLite 用法: node index.js <database_file_path>");
+  logger.error("SQL Server 用法: node index.js --sqlserver --server <server> --database <database> [--user <user> --password <password>]");
+  logger.error("PostgreSQL 用法: node index.js --postgresql --host <host> --database <database> [--user <user> --password <password> --port <port>]");
+  logger.error("MySQL 用法: node index.js --mysql --host <host> --database <database> [--user <user> --password <password> --port <port>]");
+  logger.error("MySQL with AWS IAM 用法: node index.js --mysql --aws-iam-auth --host <rds-endpoint> --database <database> --user <aws-username> --aws-region <region>");
   process.exit(1);
 }
 
@@ -81,7 +81,7 @@ if (args.includes('--sqlserver')) {
   
   // 验证 SQL Server 连接信息
   if (!connectionInfo.server || !connectionInfo.database) {
-    logger.error("Error: SQL Server requires --server and --database parameters");
+    logger.error("错误: SQL Server 需要 --server 和 --database 参数");
     process.exit(1);
   }
 }
@@ -119,7 +119,7 @@ else if (args.includes('--postgresql') || args.includes('--postgres')) {
   
   // 验证 PostgreSQL 连接信息
   if (!connectionInfo.host || !connectionInfo.database) {
-    logger.error("Error: PostgreSQL requires --host and --database parameters");
+    logger.error("错误: PostgreSQL 需要 --host 和 --database 参数");
     process.exit(1);
   }
 }
@@ -164,23 +164,23 @@ else if (args.includes('--mysql')) {
   }
   // 验证 MySQL 连接信息
   if (!connectionInfo.host || !connectionInfo.database) {
-    logger.error("Error: MySQL requires --host and --database parameters");
+    logger.error("错误: MySQL 需要 --host 和 --database 参数");
     process.exit(1);
   }
 
   // AWS IAM 认证的额外验证
   if (connectionInfo.awsIamAuth) {
     if (!connectionInfo.user) {
-      logger.error("Error: AWS IAM authentication requires --user parameter");
+      logger.error("错误: AWS IAM 认证需要 --user 参数");
       process.exit(1);
     }
     if (!connectionInfo.awsRegion) {
-      logger.error("Error: AWS IAM authentication requires --aws-region parameter");
+      logger.error("错误: AWS IAM 认证需要 --aws-region 参数");
       process.exit(1);
     }
     // 为 AWS IAM 认证自动启用 SSL (必需)
     connectionInfo.ssl = true;
-    logger.info("AWS IAM authentication enabled - SSL automatically configured");
+    logger.info("AWS IAM 认证已启用 - SSL 已自动配置");
   }
 } else {
   // SQLite 模式(默认)
@@ -208,24 +208,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 // 优雅处理关闭信号
 process.on('SIGINT', async () => {
-  logger.info('Shutting down gracefully...');
+  logger.info('正在优雅关闭...');
   await closeDatabase();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
-  logger.info('Shutting down gracefully...');
+  logger.info('正在优雅关闭...');
   await closeDatabase();
   process.exit(0);
 });
 
 // 添加全局错误处理器
 process.on('uncaughtException', (error) => {
-  logger.error('Uncaught exception:', error);
+  logger.error('未捕获的异常:', error);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('未处理的 Promise 拒绝:', promise, '原因:', reason);
 });
 
 /**
@@ -256,13 +256,13 @@ async function runServer() {
 
     logger.info('Server running. Press Ctrl+C to exit.');
   } catch (error) {
-    logger.error("Failed to initialize:", error);
+    logger.error("初始化失败:", error);
     process.exit(1);
   }
 }
 
 // 启动服务器
 runServer().catch(error => {
-  logger.error("Server initialization failed:", error);
+  logger.error("服务器初始化失败:", error);
   process.exit(1);
 }); 
