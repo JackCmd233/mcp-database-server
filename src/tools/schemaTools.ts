@@ -46,7 +46,7 @@ export async function alterTable(query: string) {
 export async function dropTable(tableName: string, confirm: boolean) {
   try {
     if (!tableName) {
-      throw new Error("Table name is required");
+      throw new Error("表名不能为空");
     }
     
     if (!confirm) {

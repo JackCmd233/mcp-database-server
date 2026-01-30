@@ -66,11 +66,11 @@ export class MysqlAdapter implements DbAdapter {
    */
   private async generateAwsAuthToken(): Promise<string> {
     if (!this.awsRegion) {
-      throw new Error("AWS region is required for IAM authentication");
+      throw new Error("AWS IAM 认证需要 AWS 区域参数");
     }
     
     if (!this.config.user) {
-      throw new Error("AWS username is required for IAM authentication");
+      throw new Error("AWS IAM 认证需要 AWS 用户名参数");
     }
     
     try {
