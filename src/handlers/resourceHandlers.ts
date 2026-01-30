@@ -66,7 +66,8 @@ export async function handleReadResource(uri: string) {
           mimeType: "application/json",
           text: JSON.stringify(result.map((column: any) => ({
             column_name: column.name,
-            data_type: column.type
+            data_type: column.type,
+            comment: column.comment || null
           })), null, 2),
         },
       ],

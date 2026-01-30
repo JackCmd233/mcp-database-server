@@ -121,7 +121,8 @@ export async function describeTable(tableName: string) {
       type: col.type,
       notnull: !!col.notnull,
       default_value: col.dflt_value,
-      primary_key: !!col.pk
+      primary_key: !!col.pk,
+      comment: col.comment || null
     })));
   } catch (error: any) {
     throw new Error(`Error describing table: ${error.message}`);
