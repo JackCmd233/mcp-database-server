@@ -2,15 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**项目目的**: 这是一个 MCP 服务器项目,专门为 Claude Code 提供数据库访问能力。当你在这个项目中工作时,你实际上是在维护一个让 Claude Code 能够与数据库对话的工具。
+
 ## 项目概述
 
-这是一个 MCP (Model Context Protocol) 服务器,为 Claude AI 提供多数据库访问能力。支持 SQLite、SQL Server、PostgreSQL 和 MySQL。
+这是一个专门为 **Claude Code** 设计的 MCP (Model Context Protocol) 服务器,让 Claude AI 能够直接访问和操作多种数据库。
+
+**核心价值**: 通过 MCP 协议,扩展 Claude Code 的能力,使其能够:
+- 直接查询数据库结构(表、列、数据类型)
+- 执行 SQL 查询读取数据
+- 执行 INSERT/UPDATE/DELETE 操作修改数据
+- 创建、修改、删除数据库表
+- 导出查询结果为 CSV/JSON 格式
+
+**支持的数据库**: SQLite、SQL Server、PostgreSQL、MySQL
 
 ## 项目信息
 
 - **包名**: `@cmd233/mcp-database-server`
 - **版本**: 1.1.1
+- **类型**: ESM 模块 (使用 `NodeNext` 模块系统)
 - **描述**: MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases (Fixed nullable field detection)
+- **NPM 包别名**: `@executeautomation/database-server` (用于全局安装)
 
 ## TypeScript 配置
 
@@ -86,6 +99,10 @@ npm run example
 npm run start
 ```
 
+**注意**:
+- `npm run prepare` 会在 `npm install` 时自动执行构建
+- 项目没有配置测试或 lint 命令
+
 ## 项目结构
 
 ```
@@ -159,33 +176,48 @@ node dist/src/index.js --mysql --aws-iam-auth --host <rds> --database <db> --use
 - PostgreSQL: `postgresql://host/{database}/{tableName}/schema`
 - MySQL: `mysql://host/{database}/{tableName}/schema`
 
-## MCP 请求流程
+## MCP 工作原理
+
+### MCP 协议集成
+
+本项目通过 MCP 协议与 Claude Code 集成。当 Claude Code 启动时:
+
+1. **工具发现**: Claude Code 请求可用的工具列表
+2. **工具调用**: 用户在 Claude Code 中发起数据库相关请求时,Claude 选择合适的工具并调用
+3. **结果返回**: 数据库操作结果通过 MCP 协议返回给 Claude Code,Claude 将其呈现给用户
+
+### MCP 请求流程
 
 完整的 MCP 请求处理流程:
 
 ```
-Claude AI 请求工具列表
+Claude Code 请求工具列表
     ↓
 MCP Server → handleListTools() → 返回 10 个工具定义
     ↓
-Claude AI 调用工具(带参数)
+Claude Code 调用工具(带参数)
     ↓
 MCP Server → handleToolCall(name, args) → 路由到具体工具函数
     ↓
 工具函数 → SQL 验证 → db/index.ts 统一 API → 适配器 → 数据库操作
     ↓
-结果逐层返回 → formatSuccessResponse() → 发送给 Claude AI
+结果逐层返回 → formatSuccessResponse() → 发送给 Claude Code
 ```
 
 **请求处理细节**:
-1. **工具列表阶段**: Claude AI 启动时请求可用工具列表
-2. **工具调用阶段**: Claude AI 根据用户请求选择合适的工具并传递参数
-3. **SQL 验证**: 工具函数验证 SQL 语句类型是否符合预期
+1. **工具列表阶段**: Claude Code 启动时请求可用工具列表
+2. **工具调用阶段**: Claude Code 根据用户请求选择合适的工具并传递参数
+3. **SQL 验证**: 工具函数验证 SQL 语句类型是否符合预期(防止误操作)
 4. **统一 API 层**: `db/index.ts` 提供一致的数据库操作接口
 5. **适配器层**: 将通用调用转换为各数据库特定的 SQL 和参数格式
 6. **响应格式化**: `formatSuccessResponse()` 将结果标准化为 MCP 响应格式
 
 ## 重要约定
+
+### 代码风格
+- 所有代码注释使用中文编写
+- 函数和变量名使用英文(遵循 JavaScript/TypeScript 惯例)
+- 新增代码的注释应保持中文,以保持代码库一致性
 
 ### 日志记录
 使用 `stderr` 而不是 `stdout` 进行日志记录,避免干扰 MCP 通信:
@@ -253,7 +285,7 @@ const logger = {
 
 ## 已知问题修复
 
-### SQL Server 可空字段检测 (Support_SQL_SERVER 分支)
+### SQL Server 可空字段检测
 
 `src/db/sqlserver-adapter.ts:189` 已修复可空字段检测逻辑:
 
@@ -268,3 +300,10 @@ CASE WHEN c.IS_NULLABLE = 'NO' THEN 1 ELSE 0 END as notnull
 ```
 
 SQL Server 的 `INFORMATION_SCHEMA.COLUMNS.IS_NULLABLE` 列返回 'YES'(可空)或'NO'(NOT NULL),而 `notnull` 字段定义为 1=NOT NULL,0=可空。
+
+## 本地化
+
+当前分支 `Support_SQL_SERVER` 包含代码注释的中文本地化工作:
+- 所有 `.ts` 源文件的注释已翻译为中文
+- 保持了代码逻辑和功能不变
+- 方便中文开发者理解和维护

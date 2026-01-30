@@ -9,6 +9,7 @@ export class SqlServerAdapter implements DbAdapter {
   private config: sql.config;
   private server: string;
   private database: string;
+  private isConnecting: boolean = false;
 
   constructor(connectionInfo: {
     server: string;
@@ -27,8 +28,18 @@ export class SqlServerAdapter implements DbAdapter {
       server: connectionInfo.server,
       database: connectionInfo.database,
       port: connectionInfo.port || 1433,
+      // 连接池配置
+      pool: {
+        max: 10,              // 最大连接数
+        min: 1,               // 最小连接数
+        idleTimeoutMillis: 30000,  // 空闲连接超时时间 (30秒)
+      },
+      // 连接超时和请求超时配置
+      connectionTimeout: 30000,    // 连接超时 (30秒)
+      requestTimeout: 30000,       // 请求超时 (30秒)
       options: {
         trustServerCertificate: connectionInfo.trustServerCertificate ?? true,
+        enableArithAbort: true,
         ...connectionInfo.options
       }
     };
@@ -40,7 +51,6 @@ export class SqlServerAdapter implements DbAdapter {
     } else {
       // 如果未提供用户名/密码,则使用 Windows 身份验证
       this.config.options!.trustedConnection = true;
-      this.config.options!.enableArithAbort = true;
     }
   }
 
@@ -48,14 +58,147 @@ export class SqlServerAdapter implements DbAdapter {
    * 初始化 SQL Server 连接
    */
   async init(): Promise<void> {
+    await this.ensureConnection();
+  }
+
+  /**
+   * 确保连接可用，如果连接断开则自动重连
+   */
+  private async ensureConnection(): Promise<sql.ConnectionPool> {
+    // 如果正在连接中，等待连接完成
+    if (this.isConnecting) {
+      await this.waitForConnection();
+      if (this.pool && this.pool.connected) {
+        return this.pool;
+      }
+    }
+
+    // 检查现有连接是否可用
+    if (this.pool && this.pool.connected) {
+      return this.pool;
+    }
+
+    // 需要建立新连接
+    this.isConnecting = true;
     try {
+      // 如果存在旧的连接池，先关闭它
+      if (this.pool) {
+        try {
+          await this.pool.close();
+        } catch (closeErr) {
+          console.error(`[WARN] Error closing old connection pool: ${(closeErr as Error).message}`);
+        }
+        this.pool = null;
+      }
+
       console.error(`[INFO] Connecting to SQL Server: ${this.server}, Database: ${this.database}`);
-      this.pool = await new sql.ConnectionPool(this.config).connect();
+
+      const pool = new sql.ConnectionPool(this.config);
+
+      // 使用单次监听器防止内存泄漏
+      pool.once('error', (err) => {
+        console.error(`[ERROR] SQL Server connection pool error: ${err.message}`);
+        // 标记连接池为不可用，下次查询时会自动重连
+        if (this.pool === pool) {
+          this.pool = null;
+        }
+      });
+
+      this.pool = await pool.connect();
       console.error(`[INFO] SQL Server connection established successfully`);
+      return this.pool;
     } catch (err) {
+      this.pool = null;
       console.error(`[ERROR] SQL Server connection error: ${(err as Error).message}`);
       throw new Error(`Failed to connect to SQL Server: ${(err as Error).message}`);
+    } finally {
+      this.isConnecting = false;
     }
+  }
+
+  /**
+   * 等待正在进行的连接完成
+   */
+  private async waitForConnection(): Promise<void> {
+    const maxWait = 30000; // 最大等待30秒
+    const interval = 100;  // 每100ms检查一次
+    let waited = 0;
+
+    while (this.isConnecting && waited < maxWait) {
+      await new Promise(resolve => setTimeout(resolve, interval));
+      waited += interval;
+    }
+
+    // 如果超时，重置状态并抛出错误
+    if (this.isConnecting) {
+      this.isConnecting = false;
+      throw new Error('Connection timeout');
+    }
+  }
+
+  /**
+   * 执行带重试的操作
+   */
+  private async executeWithRetry<T>(operation: (pool: sql.ConnectionPool) => Promise<T>, retries: number = 2): Promise<T> {
+    let lastError: Error | null = null;
+    let poolAcquired = false;  // 标记是否已成功获取连接池
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const pool = await this.ensureConnection();
+        poolAcquired = true;  // 成功获取连接池
+        return await operation(pool);
+      } catch (err) {
+        lastError = err as Error;
+        const errorMessage = lastError.message.toLowerCase();
+
+        // 检查是否是连接相关的错误
+        const isConnectionError =
+          errorMessage.includes('connection') ||
+          errorMessage.includes('socket') ||
+          errorMessage.includes('timeout') ||
+          errorMessage.includes('closed') ||
+          errorMessage.includes('econnreset') ||
+          errorMessage.includes('econnrefused') ||
+          errorMessage.includes('network') ||
+          errorMessage.includes('failed to connect');
+
+        // 只有在获取连接池后（即 poolAcquired = true）发生的连接错误才重试
+        // ensureConnection 本身的错误（如认证失败、连接超时）不应重试
+        if (isConnectionError && poolAcquired && attempt < retries && this.pool !== null) {
+          console.error(`[WARN] Connection error detected, attempting reconnect (attempt ${attempt + 1}/${retries}): ${lastError.message}`);
+          this.pool = null;
+          poolAcquired = false;  // 重置标记
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          continue;
+        }
+
+        throw lastError;
+      }
+    }
+
+    throw lastError;
+  }
+
+  /**
+   * 关闭数据库连接
+   */
+  async close(): Promise<void> {
+    // 等待正在进行的连接完成
+    if (this.isConnecting) {
+      await this.waitForConnection();
+    }
+
+    if (this.pool) {
+      try {
+        await this.pool.close();
+      } catch (err) {
+        console.error(`[WARN] Error closing connection pool: ${(err as Error).message}`);
+      }
+      this.pool = null;
+    }
+
+    this.isConnecting = false;
   }
 
   /**
@@ -65,12 +208,8 @@ export class SqlServerAdapter implements DbAdapter {
    * @returns 包含查询结果的 Promise
    */
   async all(query: string, params: any[] = []): Promise<any[]> {
-    if (!this.pool) {
-      throw new Error("Database not initialized");
-    }
-
-    try {
-      const request = this.pool.request();
+    return this.executeWithRetry(async (pool) => {
+      const request = pool.request();
       
       // 向请求添加参数
       params.forEach((param, index) => {
@@ -78,13 +217,12 @@ export class SqlServerAdapter implements DbAdapter {
       });
       
       // 将 ? 替换为命名参数
-      const preparedQuery = query.replace(/\?/g, (_, i) => `@param${i}`);
+      let paramIndex = 0;
+      const preparedQuery = query.replace(/\?/g, () => `@param${paramIndex++}`);
       
       const result = await request.query(preparedQuery);
       return result.recordset;
-    } catch (err) {
-      throw new Error(`SQL Server query error: ${(err as Error).message}`);
-    }
+    });
   }
 
   /**
@@ -94,12 +232,8 @@ export class SqlServerAdapter implements DbAdapter {
    * @returns 包含结果信息的 Promise
    */
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
-    if (!this.pool) {
-      throw new Error("Database not initialized");
-    }
-
-    try {
-      const request = this.pool.request();
+    return this.executeWithRetry(async (pool) => {
+      const request = pool.request();
       
       // 向请求添加参数
       params.forEach((param, index) => {
@@ -107,7 +241,8 @@ export class SqlServerAdapter implements DbAdapter {
       });
       
       // 将 ? 替换为命名参数
-      const preparedQuery = query.replace(/\?/g, (_, i) => `@param${i}`);
+      let paramIndex = 0;
+      const preparedQuery = query.replace(/\?/g, () => `@param${paramIndex++}`);
       
       // 如果是 INSERT,添加标识值的输出参数
       let lastID = 0;
@@ -117,17 +252,14 @@ export class SqlServerAdapter implements DbAdapter {
         const result = await request.query(updatedQuery);
         lastID = result.output.insertedId || 0;
       } else {
-        const result = await request.query(preparedQuery);
-        lastID = 0;
+        await request.query(preparedQuery);
       }
       
       return { 
         changes: this.getAffectedRows(query, lastID), 
         lastID: lastID 
       };
-    } catch (err) {
-      throw new Error(`SQL Server query error: ${(err as Error).message}`);
-    }
+    });
   }
 
   /**
@@ -136,26 +268,10 @@ export class SqlServerAdapter implements DbAdapter {
    * @returns 执行完成后解析的 Promise
    */
   async exec(query: string): Promise<void> {
-    if (!this.pool) {
-      throw new Error("Database not initialized");
-    }
-
-    try {
-      const request = this.pool.request();
+    return this.executeWithRetry(async (pool) => {
+      const request = pool.request();
       await request.batch(query);
-    } catch (err) {
-      throw new Error(`SQL Server batch error: ${(err as Error).message}`);
-    }
-  }
-
-  /**
-   * 关闭数据库连接
-   */
-  async close(): Promise<void> {
-    if (this.pool) {
-      await this.pool.close();
-      this.pool = null;
-    }
+    });
   }
 
   /**
@@ -212,4 +328,4 @@ export class SqlServerAdapter implements DbAdapter {
     }
     return 0; // 对于 SELECT 返回 0,对于 UPDATE/DELETE 在没有额外查询的情况下未知
   }
-} 
+}
