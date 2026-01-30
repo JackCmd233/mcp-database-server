@@ -87,8 +87,8 @@ export class MysqlAdapter implements DbAdapter {
       console.info(`[INFO] AWS auth token generated successfully`);
       return token;
     } catch (err) {
-      console.error(`[ERROR] Failed to generate AWS auth token: ${(err as Error).message}`);
-      throw new Error(`AWS IAM authentication failed: ${(err as Error).message}. Please check your AWS credentials and IAM permissions.`);
+      console.error(`[ERROR] 生成 AWS 认证令牌失败: ${(err as Error).message}`);
+      throw new Error(`AWS IAM 认证失败: ${(err as Error).message}。请检查您的 AWS 凭据和 IAM 权限。`);
     }
   }
 
@@ -114,8 +114,8 @@ export class MysqlAdapter implements DbAdapter {
           
           this.connection = await mysql.createConnection(awsConfig);
         } catch (err) {
-          console.error(`[ERROR] AWS IAM authentication failed: ${(err as Error).message}`);
-          throw new Error(`AWS IAM authentication failed: ${(err as Error).message}`);
+          console.error(`[ERROR] AWS IAM 认证失败: ${(err as Error).message}`);
+          throw new Error(`AWS IAM 认证失败: ${(err as Error).message}`);
         }
       } else {
         this.connection = await mysql.createConnection(this.config);
@@ -125,9 +125,9 @@ export class MysqlAdapter implements DbAdapter {
     } catch (err) {
       console.error(`[ERROR] MySQL connection error: ${(err as Error).message}`);
       if (this.awsIamAuth) {
-        throw new Error(`Failed to connect to MySQL with AWS IAM authentication: ${(err as Error).message}. Please verify your AWS credentials, IAM permissions, and RDS configuration.`);
+        throw new Error(`使用 AWS IAM 认证连接 MySQL 失败: ${(err as Error).message}。请验证您的 AWS 凭据、IAM 权限和 RDS 配置。`);
       } else {
-        throw new Error(`Failed to connect to MySQL: ${(err as Error).message}`);
+        throw new Error(`连接 MySQL 失败: ${(err as Error).message}`);
       }
     }
   }

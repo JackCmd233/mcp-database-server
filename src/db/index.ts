@@ -21,7 +21,7 @@ export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite
     // 初始化连接
     await dbAdapter.init();
   } catch (error) {
-    throw new Error(`Failed to initialize database: ${(error as Error).message}`);
+    throw new Error(`数据库初始化失败: ${(error as Error).message}`);
   }
 }
 
