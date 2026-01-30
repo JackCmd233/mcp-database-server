@@ -30,8 +30,20 @@ src/handlers/ (请求路由层)
     ↓
 src/tools/ (工具实现层)
     ↓
-src/db/ (数据库适配器层)
+src/db/index.ts (数据库管理层)
+    ↓
+src/db/adapter.ts (适配器接口层)
+    ↓
+具体适配器实现 (sqlite-adapter.ts, sqlserver-adapter.ts 等)
 ```
+
+**关键说明**:
+- `src/index.ts`: MCP 服务器主入口,处理命令行参数,初始化数据库连接
+- `src/handlers/`: MCP 协议层的请求路由,处理工具调用和资源访问
+- `src/tools/`: 具体工具实现,包含 SQL 验证和业务逻辑
+- `src/db/index.ts`: **数据库管理层**,提供统一的数据库操作 API (`dbAll`, `dbRun`, `dbExec`, `getListTablesQuery`, `getDescribeTableQuery`),屏蔽底层适配器差异,管理全局适配器实例
+- `src/db/adapter.ts`: 定义 `DbAdapter` 接口和适配器工厂函数
+- 具体适配器: 实现各数据库特定的连接和操作逻辑
 
 ### 关键接口
 
@@ -120,18 +132,58 @@ node dist/src/index.js --mysql --aws-iam-auth --host <rds> --database <db> --use
 
 ## MCP 工具列表
 
-| 工具 | 功能 |
-|------|------|
-| `read_query` | 执行 SELECT 查询 |
-| `write_query` | 执行 INSERT/UPDATE/DELETE |
-| `create_table` | 创建新表 |
-| `alter_table` | 修改表结构 |
-| `drop_table` | 删除表(需要 confirm=true) |
-| `list_tables` | 列出所有表 |
-| `describe_table` | 获取表结构 |
-| `export_query` | 导出查询结果(CSV/JSON) |
-| `append_insight` | 添加业务洞察到备忘录 |
-| `list_insights` | 列出所有业务洞察 |
+| 工具 | 功能 | 验证规则 |
+|------|------|----------|
+| `read_query` | 执行 SELECT 查询 | 必须以 "SELECT" 开头 |
+| `write_query` | 执行 INSERT/UPDATE/DELETE | 必须以 "INSERT"、"UPDATE" 或 "DELETE" 开头,不能是 SELECT |
+| `create_table` | 创建新表 | 无特定验证 |
+| `alter_table` | 修改表结构 | 无特定验证 |
+| `drop_table` | 删除表(需要 confirm=true) | 需要确认参数 `confirm=true` |
+| `list_tables` | 列出所有表 | 无特定验证 |
+| `describe_table` | 获取表结构 | 需要表名参数 |
+| `export_query` | 导出查询结果(CSV/JSON) | 必须以 "SELECT" 开头 |
+| `append_insight` | 添加业务洞察到备忘录 | 无特定验证 |
+| `list_insights` | 列出所有业务洞察 | 无特定验证 |
+
+## MCP 资源列表
+
+服务器提供动态资源以访问数据库表结构:
+
+| 资源 URI 格式 | 功能 |
+|---------------|------|
+| `{tableName}/schema` | 获取表的结构信息 (列名和数据类型) |
+
+**资源 URI 格式示例**:
+- SQLite: `sqlite:///path/to/db/{tableName}/schema`
+- SQL Server: `sqlserver://server/{database}/{tableName}/schema`
+- PostgreSQL: `postgresql://host/{database}/{tableName}/schema`
+- MySQL: `mysql://host/{database}/{tableName}/schema`
+
+## MCP 请求流程
+
+完整的 MCP 请求处理流程:
+
+```
+Claude AI 请求工具列表
+    ↓
+MCP Server → handleListTools() → 返回 10 个工具定义
+    ↓
+Claude AI 调用工具(带参数)
+    ↓
+MCP Server → handleToolCall(name, args) → 路由到具体工具函数
+    ↓
+工具函数 → SQL 验证 → db/index.ts 统一 API → 适配器 → 数据库操作
+    ↓
+结果逐层返回 → formatSuccessResponse() → 发送给 Claude AI
+```
+
+**请求处理细节**:
+1. **工具列表阶段**: Claude AI 启动时请求可用工具列表
+2. **工具调用阶段**: Claude AI 根据用户请求选择合适的工具并传递参数
+3. **SQL 验证**: 工具函数验证 SQL 语句类型是否符合预期
+4. **统一 API 层**: `db/index.ts` 提供一致的数据库操作接口
+5. **适配器层**: 将通用调用转换为各数据库特定的 SQL 和参数格式
+6. **响应格式化**: `formatSuccessResponse()` 将结果标准化为 MCP 响应格式
 
 ## 重要约定
 
@@ -165,12 +217,28 @@ const logger = {
 
 创建新适配器时需注意:
 
-- **参数占位符转换**: 在 `all()` 和 `run()` 方法中将 `?` 转换为目标数据库格式
-- **lastID 返回**: INSERT 操作需正确返回最后插入的 ID
-- **可空字段检测**: `getDescribeTableQuery()` 返回的 `notnull` 字段,1 表示 NOT NULL,0 表示可空
-  - 常见错误: SQL Server 的 `IS_NULLABLE` 列 'YES' 表示可空,'NO' 表示 NOT NULL
-- **连接池**: 推荐使用连接池而非单连接
-- **模块导入**: 必须使用 `.js` 扩展名 (TypeScript 编译后要求)
+1. **参数占位符转换**
+   - 在 `all()` 和 `run()` 方法中将通用的 `?` 占位符转换为目标数据库格式
+   - 确保参数索引从 0 或 1 开始正确对应
+
+2. **lastID 返回**
+   - INSERT 操作需正确返回最后插入的 ID
+   - **SQL Server**: 使用 `SELECT SCOPE_IDENTITY() AS lastID` 查询
+   - **PostgreSQL**: 使用 `RETURNING id` 子句
+   - **MySQL/SQLite**: 驱动自动提供 `insertId` 或 `lastID`
+
+3. **可空字段检测**
+   - `getDescribeTableQuery()` 返回的 `notnull` 字段: 1 表示 NOT NULL,0 表示可空
+   - **常见错误**: SQL Server 的 `IS_NULLABLE` 列返回 'YES'(可空)或'NO'(NOT NULL),需要反向映射
+   - 推荐使用 `CASE WHEN IS_NULLABLE = 'NO' THEN 1 ELSE 0 END`
+
+4. **连接管理**
+   - 推荐使用连接池而非单连接以提高性能
+   - 实现 `close()` 方法以正确释放资源
+
+5. **模块导入**
+   - 必须使用 `.js` 扩展名导入相对模块 (TypeScript 编译后要求)
+   - 示例: `import { createAdapter } from './adapter.js'`
 
 ## 参数占位符转换
 
