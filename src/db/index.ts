@@ -33,7 +33,7 @@ export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite
  */
 export function dbAll(query: string, params: any[] = []): Promise<any[]> {
   if (!dbAdapter) {
-    throw new Error("Database not initialized");
+    throw new Error("数据库未初始化");
   }
   return dbAdapter.all(query, params);
 }
@@ -46,7 +46,7 @@ export function dbAll(query: string, params: any[] = []): Promise<any[]> {
  */
 export function dbRun(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
   if (!dbAdapter) {
-    throw new Error("Database not initialized");
+    throw new Error("数据库未初始化");
   }
   return dbAdapter.run(query, params);
 }
@@ -58,7 +58,7 @@ export function dbRun(query: string, params: any[] = []): Promise<{ changes: num
  */
 export function dbExec(query: string): Promise<void> {
   if (!dbAdapter) {
-    throw new Error("Database not initialized");
+    throw new Error("数据库未初始化");
   }
   return dbAdapter.exec(query);
 }
@@ -78,7 +78,7 @@ export function closeDatabase(): Promise<void> {
  */
 export function getDatabaseMetadata(): { name: string, type: string, path?: string, server?: string, database?: string } {
   if (!dbAdapter) {
-    throw new Error("Database not initialized");
+    throw new Error("数据库未初始化");
   }
   return dbAdapter.getMetadata();
 }
@@ -88,7 +88,7 @@ export function getDatabaseMetadata(): { name: string, type: string, path?: stri
  */
 export function getListTablesQuery(): string {
   if (!dbAdapter) {
-    throw new Error("Database not initialized");
+    throw new Error("数据库未初始化");
   }
   return dbAdapter.getListTablesQuery();
 }
@@ -99,7 +99,7 @@ export function getListTablesQuery(): string {
  */
 export function getDescribeTableQuery(tableName: string): string {
   if (!dbAdapter) {
-    throw new Error("Database not initialized");
+    throw new Error("数据库未初始化");
   }
   return dbAdapter.getDescribeTableQuery(tableName);
 } 

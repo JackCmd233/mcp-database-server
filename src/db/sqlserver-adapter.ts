@@ -110,7 +110,7 @@ export class SqlServerAdapter implements DbAdapter {
     } catch (err) {
       this.pool = null;
       console.error(`[ERROR] SQL Server connection error: ${(err as Error).message}`);
-      throw new Error(`Failed to connect to SQL Server: ${(err as Error).message}`);
+      throw new Error(`连接 SQL Server 失败: ${(err as Error).message}`);
     } finally {
       this.isConnecting = false;
     }
@@ -132,7 +132,7 @@ export class SqlServerAdapter implements DbAdapter {
     // 如果超时，重置状态并抛出错误
     if (this.isConnecting) {
       this.isConnecting = false;
-      throw new Error('Connection timeout');
+      throw new Error('连接超时');
     }
   }
 

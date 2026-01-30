@@ -76,6 +76,6 @@ export function createDbAdapter(type: string, connectionInfo: any): DbAdapter {
     case 'mysql':
       return new MysqlAdapter(connectionInfo);
     default:
-      throw new Error(`Unsupported database type: ${type}`);
+      throw new Error(`不支持的数据库类型: ${type}`);
   }
 } 

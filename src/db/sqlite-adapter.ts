@@ -39,7 +39,7 @@ export class SqliteAdapter implements DbAdapter {
    */
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.db) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
 
     return new Promise((resolve, reject) => {
@@ -61,7 +61,7 @@ export class SqliteAdapter implements DbAdapter {
    */
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.db) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
 
     return new Promise((resolve, reject) => {
@@ -82,7 +82,7 @@ export class SqliteAdapter implements DbAdapter {
    */
   async exec(query: string): Promise<void> {
     if (!this.db) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
 
     return new Promise((resolve, reject) => {

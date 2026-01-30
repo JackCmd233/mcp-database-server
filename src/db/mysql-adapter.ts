@@ -53,7 +53,7 @@ export class MysqlAdapter implements DbAdapter {
     if (connectionInfo.port && typeof connectionInfo.port !== 'number') {
       const parsedPort = parseInt(connectionInfo.port as any, 10);
       if (isNaN(parsedPort)) {
-        throw new Error(`Invalid port value for MySQL: ${connectionInfo.port}`);
+        throw new Error(`无效的 MySQL 端口号: ${connectionInfo.port}`);
       }
       this.config.port = parsedPort;
     }
@@ -137,13 +137,13 @@ export class MysqlAdapter implements DbAdapter {
    */
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.connection) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
     try {
       const [rows] = await this.connection.execute(query, params);
       return Array.isArray(rows) ? rows : [];
     } catch (err) {
-      throw new Error(`MySQL query error: ${(err as Error).message}`);
+      throw new Error(`MySQL 查询错误: ${(err as Error).message}`);
     }
   }
 
@@ -152,7 +152,7 @@ export class MysqlAdapter implements DbAdapter {
    */
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.connection) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
     try {
       const [result]: any = await this.connection.execute(query, params);
@@ -160,7 +160,7 @@ export class MysqlAdapter implements DbAdapter {
       const lastID = result.insertId || 0;
       return { changes, lastID };
     } catch (err) {
-      throw new Error(`MySQL query error: ${(err as Error).message}`);
+      throw new Error(`MySQL 查询错误: ${(err as Error).message}`);
     }
   }
 
@@ -169,12 +169,12 @@ export class MysqlAdapter implements DbAdapter {
    */
   async exec(query: string): Promise<void> {
     if (!this.connection) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
     try {
       await this.connection.query(query);
     } catch (err) {
-      throw new Error(`MySQL batch error: ${(err as Error).message}`);
+      throw new Error(`MySQL 批处理错误: ${(err as Error).message}`);
     }
   }
 

@@ -56,7 +56,7 @@ export class PostgresqlAdapter implements DbAdapter {
       console.error(`[INFO] PostgreSQL connection established successfully`);
     } catch (err) {
       console.error(`[ERROR] PostgreSQL connection error: ${(err as Error).message}`);
-      throw new Error(`Failed to connect to PostgreSQL: ${(err as Error).message}`);
+      throw new Error(`连接 PostgreSQL 失败: ${(err as Error).message}`);
     }
   }
 
@@ -68,7 +68,7 @@ export class PostgresqlAdapter implements DbAdapter {
    */
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.client) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
 
     try {
@@ -78,7 +78,7 @@ export class PostgresqlAdapter implements DbAdapter {
       const result = await this.client.query(preparedQuery, params);
       return result.rows;
     } catch (err) {
-      throw new Error(`PostgreSQL query error: ${(err as Error).message}`);
+      throw new Error(`PostgreSQL 查询错误: ${(err as Error).message}`);
     }
   }
 
@@ -90,7 +90,7 @@ export class PostgresqlAdapter implements DbAdapter {
    */
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.client) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
 
     try {
@@ -117,7 +117,7 @@ export class PostgresqlAdapter implements DbAdapter {
       
       return { changes, lastID };
     } catch (err) {
-      throw new Error(`PostgreSQL query error: ${(err as Error).message}`);
+      throw new Error(`PostgreSQL 查询错误: ${(err as Error).message}`);
     }
   }
 
@@ -128,13 +128,13 @@ export class PostgresqlAdapter implements DbAdapter {
    */
   async exec(query: string): Promise<void> {
     if (!this.client) {
-      throw new Error("Database not initialized");
+      throw new Error("数据库未初始化");
     }
 
     try {
       await this.client.query(query);
     } catch (err) {
-      throw new Error(`PostgreSQL batch error: ${(err as Error).message}`);
+      throw new Error(`PostgreSQL 批处理错误: ${(err as Error).message}`);
     }
   }
 
