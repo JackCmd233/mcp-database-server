@@ -86,7 +86,7 @@ export class SqlServerAdapter implements DbAdapter {
         try {
           await this.pool.close();
         } catch (closeErr) {
-          console.error(`[WARN] Error closing old connection pool: ${(closeErr as Error).message}`);
+          console.error(`[WARN] 关闭旧连接池时出错: ${(closeErr as Error).message}`);
         }
         this.pool = null;
       }
@@ -97,7 +97,7 @@ export class SqlServerAdapter implements DbAdapter {
 
       // 使用单次监听器防止内存泄漏
       pool.once('error', (err) => {
-        console.error(`[ERROR] SQL Server connection pool error: ${err.message}`);
+        console.error(`[ERROR] SQL Server 连接池错误: ${err.message}`);
         // 标记连接池为不可用，下次查询时会自动重连
         if (this.pool === pool) {
           this.pool = null;
@@ -166,7 +166,7 @@ export class SqlServerAdapter implements DbAdapter {
         // 只有在获取连接池后（即 poolAcquired = true）发生的连接错误才重试
         // ensureConnection 本身的错误（如认证失败、连接超时）不应重试
         if (isConnectionError && poolAcquired && attempt < retries && this.pool !== null) {
-          console.error(`[WARN] Connection error detected, attempting reconnect (attempt ${attempt + 1}/${retries}): ${lastError.message}`);
+          console.error(`[WARN] 检测到连接错误，正在尝试重新连接 (尝试 ${attempt + 1}/${retries}): ${lastError.message}`);
           this.pool = null;
           poolAcquired = false;  // 重置标记
           await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
@@ -193,7 +193,7 @@ export class SqlServerAdapter implements DbAdapter {
       try {
         await this.pool.close();
       } catch (err) {
-        console.error(`[WARN] Error closing connection pool: ${(err as Error).message}`);
+        console.error(`[WARN] 关闭连接池时出错: ${(err as Error).message}`);
       }
       this.pool = null;
     }
