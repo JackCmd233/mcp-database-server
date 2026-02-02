@@ -154,8 +154,8 @@ node dist/src/index.js --mysql --aws-iam-auth --host <rds> --database <db> --use
 |------|------|----------|
 | `read_query` | 执行 SELECT 查询 | 必须以 "SELECT" 开头 |
 | `write_query` | 执行 INSERT/UPDATE/DELETE | 必须以 "INSERT"、"UPDATE" 或 "DELETE" 开头,不能是 SELECT |
-| `create_table` | 创建新表 | 无特定验证 |
-| `alter_table` | 修改表结构 | 无特定验证 |
+| `create_table` | 创建新表 | 必须以 "CREATE TABLE" 开头 |
+| `alter_table` | 修改表结构 | 必须以 "ALTER TABLE" 开头 |
 | `drop_table` | 删除表(需要 confirm=true) | 需要确认参数 `confirm=true` |
 | `list_tables` | 列出所有表 | 无特定验证 |
 | `describe_table` | 获取表结构 | 需要表名参数 |
@@ -237,6 +237,14 @@ const logger = {
 
 ### 参数化查询
 所有适配器都支持参数化查询以防止 SQL 注入,各数据库使用不同的占位符格式(适配器会自动转换)。
+
+### SQL 验证规则
+
+所有 MCP 工具在工具层 (`src/tools/`) 执行严格的 SQL 验证:
+- 验证使用 `query.trim().toLowerCase().startsWith(pattern)` 模式
+- 每个工具只允许特定类型的 SQL 语句
+- 防止用户误操作(如用 `write_query` 执行 SELECT)
+- 验证在数据库操作之前执行,提供清晰的错误消息
 
 ### 添加新数据库支持
 
