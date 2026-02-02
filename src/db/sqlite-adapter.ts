@@ -18,13 +18,13 @@ export class SqliteAdapter implements DbAdapter {
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
       // 确保数据库路径可访问
-      console.error(`[INFO] Opening SQLite database at: ${this.dbPath}`);
+      console.error(`[INFO] 正在打开 SQLite 数据库: ${this.dbPath}`);
       this.db = new sqlite3.Database(this.dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
         if (err) {
-          console.error(`[ERROR] SQLite connection error: ${err.message}`);
+          console.error(`[ERROR] SQLite 连接错误: ${err.message}`);
           reject(err);
         } else {
-          console.error("[INFO] SQLite database opened successfully");
+          console.error("[INFO] SQLite 数据库成功打开");
           resolve();
         }
       });

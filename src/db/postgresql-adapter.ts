@@ -41,7 +41,7 @@ export class PostgresqlAdapter implements DbAdapter {
    */
   async init(): Promise<void> {
     try {
-      console.error(`[INFO] Connecting to PostgreSQL: ${this.host}, Database: ${this.database}`);
+      console.error(`[INFO] 正在连接 PostgreSQL: ${this.host}, 数据库: ${this.database}`);
       console.error(`[DEBUG] Connection details:`, {
         host: this.host, 
         database: this.database,
@@ -53,9 +53,9 @@ export class PostgresqlAdapter implements DbAdapter {
       
       this.client = new pg.Client(this.config);
       await this.client.connect();
-      console.error(`[INFO] PostgreSQL connection established successfully`);
+      console.error(`[INFO] PostgreSQL 连接成功建立`);
     } catch (err) {
-      console.error(`[ERROR] PostgreSQL connection error: ${(err as Error).message}`);
+      console.error(`[ERROR] PostgreSQL 连接错误: ${(err as Error).message}`);
       throw new Error(`连接 PostgreSQL 失败: ${(err as Error).message}`);
     }
   }

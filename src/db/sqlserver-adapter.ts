@@ -91,7 +91,7 @@ export class SqlServerAdapter implements DbAdapter {
         this.pool = null;
       }
 
-      console.error(`[INFO] Connecting to SQL Server: ${this.server}, Database: ${this.database}`);
+      console.error(`[INFO] 正在连接 SQL Server: ${this.server}, 数据库: ${this.database}`);
 
       const pool = new sql.ConnectionPool(this.config);
 
@@ -105,11 +105,11 @@ export class SqlServerAdapter implements DbAdapter {
       });
 
       this.pool = await pool.connect();
-      console.error(`[INFO] SQL Server connection established successfully`);
+      console.error(`[INFO] SQL Server 连接成功建立`);
       return this.pool;
     } catch (err) {
       this.pool = null;
-      console.error(`[ERROR] SQL Server connection error: ${(err as Error).message}`);
+      console.error(`[ERROR] SQL Server 连接错误: ${(err as Error).message}`);
       throw new Error(`连接 SQL Server 失败: ${(err as Error).message}`);
     } finally {
       this.isConnecting = false;

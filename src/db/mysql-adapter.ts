@@ -74,7 +74,7 @@ export class MysqlAdapter implements DbAdapter {
     }
     
     try {
-      console.info(`[INFO] Generating AWS auth token for region: ${this.awsRegion}, host: ${this.host}, user: ${this.config.user}`);
+      console.info(`[INFO] 正在为区域 ${this.awsRegion} 生成 AWS 认证令牌, 主机: ${this.host}, 用户: ${this.config.user}`);
       
       const signer = new Signer({
         region: this.awsRegion,
@@ -84,7 +84,7 @@ export class MysqlAdapter implements DbAdapter {
       });
       
       const token = await signer.getAuthToken();
-      console.info(`[INFO] AWS auth token generated successfully`);
+      console.info(`[INFO] AWS 认证令牌生成成功`);
       return token;
     } catch (err) {
       console.error(`[ERROR] 生成 AWS 认证令牌失败: ${(err as Error).message}`);
@@ -97,11 +97,11 @@ export class MysqlAdapter implements DbAdapter {
    */
   async init(): Promise<void> {
     try {
-      console.info(`[INFO] Connecting to MySQL: ${this.host}, Database: ${this.database}`);
+      console.info(`[INFO] 正在连接 MySQL: ${this.host}, 数据库: ${this.database}`);
       
       // 处理 AWS IAM 认证
       if (this.awsIamAuth) {
-        console.info(`[INFO] Using AWS IAM authentication for user: ${this.config.user}`);
+        console.info(`[INFO] 正在为用户 ${this.config.user} 使用 AWS IAM 认证`);
         
         try {
           const authToken = await this.generateAwsAuthToken();
@@ -121,9 +121,9 @@ export class MysqlAdapter implements DbAdapter {
         this.connection = await mysql.createConnection(this.config);
       }
       
-      console.info(`[INFO] MySQL connection established successfully`);
+      console.info(`[INFO] MySQL 连接成功建立`);
     } catch (err) {
-      console.error(`[ERROR] MySQL connection error: ${(err as Error).message}`);
+      console.error(`[ERROR] MySQL 连接错误: ${(err as Error).message}`);
       if (this.awsIamAuth) {
         throw new Error(`使用 AWS IAM 认证连接 MySQL 失败: ${(err as Error).message}。请验证您的 AWS 凭据、IAM 权限和 RDS 配置。`);
       } else {
