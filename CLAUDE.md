@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 项目信息
 
 - **包名**: `@cmd233/mcp-database-server`
-- **版本**: 1.1.1
+- **版本**: 1.1.7
 - **类型**: ESM 模块 (使用 `NodeNext` 模块系统)
 - **描述**: MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases (Fixed nullable field detection)
 - **NPM 包别名**: `@executeautomation/database-server` (用于全局安装)
@@ -57,6 +57,7 @@ src/db/adapter.ts (适配器接口层)
 - `src/db/index.ts`: **数据库管理层**,提供统一的数据库操作 API (`dbAll`, `dbRun`, `dbExec`, `getListTablesQuery`, `getDescribeTableQuery`),屏蔽底层适配器差异,管理全局适配器实例
 - `src/db/adapter.ts`: 定义 `DbAdapter` 接口和适配器工厂函数
 - 具体适配器: 实现各数据库特定的连接和操作逻辑
+- **全局适配器实例**: 数据库管理层(`src/db/index.ts`)使用全局变量管理适配器实例,服务器生命周期内维护单一连接,通过 `initDatabase()` 初始化,`closeDatabase()` 清理
 
 ### 关键接口
 
@@ -68,7 +69,7 @@ src/db/adapter.ts (适配器接口层)
 - `exec(query)` - 执行多条 SQL 语句
 - `getMetadata()` - 获取数据库元数据
 - `getListTablesQuery()` - 获取列出表的查询
-- `getDescribeTableQuery(tableName)` - 获取表结构查询
+- `getDescribeTableQuery(tableName)` - 获取表结构查询(返回包含 `comment` 字段的列注释)
 
 ### 数据库适配器
 
@@ -159,8 +160,8 @@ node dist/src/index.js --mysql --aws-iam-auth --host <rds> --database <db> --use
 | `list_tables` | 列出所有表 | 无特定验证 |
 | `describe_table` | 获取表结构 | 需要表名参数 |
 | `export_query` | 导出查询结果(CSV/JSON) | 必须以 "SELECT" 开头 |
-| `append_insight` | 添加业务洞察到备忘录 | 无特定验证 |
-| `list_insights` | 列出所有业务洞察 | 无特定验证 |
+| `append_insight` | 添加业务洞察到备忘录 | **注意**: 仅支持 SQLite 数据库 |
+| `list_insights` | 列出所有业务洞察 | **注意**: 仅支持 SQLite 数据库 |
 
 ## MCP 资源列表
 
@@ -267,10 +268,17 @@ const logger = {
 4. **连接管理**
    - 推荐使用连接池而非单连接以提高性能
    - 实现 `close()` 方法以正确释放资源
+   - **当前实现差异**:
+     - SQL Server: 使用连接池 (max: 10, min: 1, idleTimeoutMillis: 30000) + `executeWithRetry` 自动重试机制
+     - PostgreSQL/MySQL/SQLite: 使用单连接模式
 
 5. **模块导入**
    - 必须使用 `.js` 扩展名导入相对模块 (TypeScript 编译后要求)
    - 示例: `import { createAdapter } from './adapter.js'`
+
+6. **Windows 集成认证**
+   - SQL Server 适配器在未提供用户名/密码时自动启用
+   - 设置 `options.trustedConnection = true`
 
 ## 参数占位符转换
 
@@ -303,7 +311,9 @@ SQL Server 的 `INFORMATION_SCHEMA.COLUMNS.IS_NULLABLE` 列返回 'YES'(可空)�
 
 ## 本地化
 
-当前分支 `Support_SQL_SERVER` 包含代码注释的中文本地化工作:
+项目已完成全面的中文本地化(完成于 2025-01-25):
 - 所有 `.ts` 源文件的注释已翻译为中文
+- 错误消息已中文化
+- 日志消息已中文化
 - 保持了代码逻辑和功能不变
 - 方便中文开发者理解和维护
