@@ -25,8 +25,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **描述**: MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases (Fixed nullable field detection)
 - **NPM 包别名**: `@executeautomation/database-server` (用于全局安装)
 
+### 核心依赖
+
+- `@modelcontextprotocol/sdk`: 1.9.0
+- `sqlite3`: 5.1.7
+- `mssql`: 11.0.1
+- `pg`: 8.11.3
+- `mysql2`: 3.14.1
+- `@aws-sdk/rds-signer`: 3.0.0
+
 ## TypeScript 配置
 
+- **编译目标**: ES2020
 - 使用 `NodeNext` 模块系统 (需要 `.js` 扩展名导入)
 - 输出目录: `dist/`
 - 源码目录: `src/`
@@ -128,6 +138,12 @@ src/
 ```
 
 ## 运行服务器
+
+服务器提供两个可执行命令:
+- `ea-database-server` - 别名命令
+- `mcp-database-server` - 主命令
+
+### 使用方式
 
 ```bash
 # SQLite(默认)
