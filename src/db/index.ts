@@ -1,4 +1,4 @@
-import { DbAdapter, createDbAdapter } from './adapter.js';
+import {DbAdapter, createDbAdapter} from './adapter.js';
 
 // 存储活动的数据库适配器
 let dbAdapter: DbAdapter | null = null;
@@ -9,20 +9,20 @@ let dbAdapter: DbAdapter | null = null;
  * @param dbType 数据库类型 ('sqlite' 或 'sqlserver')
  */
 export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite'): Promise<void> {
-  try {
-    // 如果 connectionInfo 是字符串,则假定它是 SQLite 路径
-    if (typeof connectionInfo === 'string') {
-      connectionInfo = { path: connectionInfo };
+    try {
+        // 如果 connectionInfo 是字符串,则假定它是 SQLite 路径
+        if (typeof connectionInfo === 'string') {
+            connectionInfo = {path: connectionInfo};
+        }
+
+        // 根据数据库类型创建相应的适配器
+        dbAdapter = createDbAdapter(dbType, connectionInfo);
+
+        // 初始化连接
+        await dbAdapter.init();
+    } catch (error) {
+        throw new Error(`数据库初始化失败: ${(error as Error).message}`);
     }
-
-    // 根据数据库类型创建相应的适配器
-    dbAdapter = createDbAdapter(dbType, connectionInfo);
-
-    // 初始化连接
-    await dbAdapter.init();
-  } catch (error) {
-    throw new Error(`数据库初始化失败: ${(error as Error).message}`);
-  }
 }
 
 /**
@@ -32,10 +32,10 @@ export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite
  * @returns 包含查询结果的 Promise
  */
 export function dbAll(query: string, params: any[] = []): Promise<any[]> {
-  if (!dbAdapter) {
-    throw new Error("数据库未初始化");
-  }
-  return dbAdapter.all(query, params);
+    if (!dbAdapter) {
+        throw new Error("数据库未初始化");
+    }
+    return dbAdapter.all(query, params);
 }
 
 /**
@@ -45,10 +45,10 @@ export function dbAll(query: string, params: any[] = []): Promise<any[]> {
  * @returns 包含结果信息的 Promise
  */
 export function dbRun(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
-  if (!dbAdapter) {
-    throw new Error("数据库未初始化");
-  }
-  return dbAdapter.run(query, params);
+    if (!dbAdapter) {
+        throw new Error("数据库未初始化");
+    }
+    return dbAdapter.run(query, params);
 }
 
 /**
@@ -57,40 +57,46 @@ export function dbRun(query: string, params: any[] = []): Promise<{ changes: num
  * @returns 执行完成后解析的 Promise
  */
 export function dbExec(query: string): Promise<void> {
-  if (!dbAdapter) {
-    throw new Error("数据库未初始化");
-  }
-  return dbAdapter.exec(query);
+    if (!dbAdapter) {
+        throw new Error("数据库未初始化");
+    }
+    return dbAdapter.exec(query);
 }
 
 /**
  * 关闭数据库连接
  */
 export function closeDatabase(): Promise<void> {
-  if (!dbAdapter) {
-    return Promise.resolve();
-  }
-  return dbAdapter.close();
+    if (!dbAdapter) {
+        return Promise.resolve();
+    }
+    return dbAdapter.close();
 }
 
 /**
  * 获取数据库元数据
  */
-export function getDatabaseMetadata(): { name: string, type: string, path?: string, server?: string, database?: string } {
-  if (!dbAdapter) {
-    throw new Error("数据库未初始化");
-  }
-  return dbAdapter.getMetadata();
+export function getDatabaseMetadata(): {
+    name: string,
+    type: string,
+    path?: string,
+    server?: string,
+    database?: string
+} {
+    if (!dbAdapter) {
+        throw new Error("数据库未初始化");
+    }
+    return dbAdapter.getMetadata();
 }
 
 /**
  * 获取列出表的数据库特定查询
  */
 export function getListTablesQuery(): string {
-  if (!dbAdapter) {
-    throw new Error("数据库未初始化");
-  }
-  return dbAdapter.getListTablesQuery();
+    if (!dbAdapter) {
+        throw new Error("数据库未初始化");
+    }
+    return dbAdapter.getListTablesQuery();
 }
 
 /**
@@ -98,8 +104,8 @@ export function getListTablesQuery(): string {
  * @param tableName 表名
  */
 export function getDescribeTableQuery(tableName: string): string {
-  if (!dbAdapter) {
-    throw new Error("数据库未初始化");
-  }
-  return dbAdapter.getDescribeTableQuery(tableName);
+    if (!dbAdapter) {
+        throw new Error("数据库未初始化");
+    }
+    return dbAdapter.getDescribeTableQuery(tableName);
 } 
