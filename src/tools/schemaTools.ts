@@ -2,14 +2,64 @@ import {dbAll, dbExec, getListTablesQuery, getDescribeTableQuery} from '../db/in
 import {formatSuccessResponse} from '../utils/formatUtils.js';
 
 /**
+ * 从 SQL 语句中提取表名
+ * @param query SQL 语句
+ * @param operation SQL 操作类型（CREATE TABLE、ALTER TABLE 等）
+ * @returns 提取的表名或 null
+ */
+function extractTableName(query: string, operation: string): string | null {
+    try {
+        const normalizedQuery = query.trim().replace(/\s+/g, ' ');
+        const operationPrefix = operation.toLowerCase();
+
+        if (!normalizedQuery.toLowerCase().startsWith(operationPrefix)) {
+            return null;
+        }
+
+        // 移除操作前缀后的剩余部分
+        const afterOperation = normalizedQuery.substring(operationPrefix.length).trim();
+
+        // 处理 IF NOT EXISTS 或 IF EXISTS 等子句
+        const patterns = [
+            /^if\s+not\s+exists\s+([^\s(]+)/i,  // CREATE TABLE IF NOT EXISTS tablename
+            /^if\s+exists\s+([^\s(]+)/i,        // DROP TABLE IF EXISTS tablename
+            /^([^\s(]+)/                        // CREATE TABLE tablename
+        ];
+
+        for (const pattern of patterns) {
+            const match = afterOperation.match(pattern);
+            if (match && match[1]) {
+                // 移除引号（如果有）
+                return match[1].replace(/^[`"[]|[`"\]]$/g, '');
+            }
+        }
+
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+/**
  * 在数据库中创建新表
  * @param query CREATE TABLE SQL 语句
+ * @param confirm 安全确认标志（默认 false，防止误操作）
  * @returns 操作结果
  */
-export async function createTable(query: string) {
+export async function createTable(query: string, confirm: boolean = false) {
     try {
         if (!query.trim().toLowerCase().startsWith("create table")) {
             throw new Error("只允许执行 CREATE TABLE 语句");
+        }
+
+        // 确认检查：防止误操作
+        if (!confirm) {
+            const tableName = extractTableName(query, "CREATE TABLE");
+            const tableInfo = tableName ? ` '${tableName}'` : '';
+            return formatSuccessResponse({
+                success: false,
+                message: `需要安全确认。设置 confirm=true 以继续创建表${tableInfo}。`
+            });
         }
 
         await dbExec(query);
@@ -22,12 +72,23 @@ export async function createTable(query: string) {
 /**
  * 修改现有表的结构
  * @param query ALTER TABLE SQL 语句
+ * @param confirm 安全确认标志（默认 false，防止误操作）
  * @returns 操作结果
  */
-export async function alterTable(query: string) {
+export async function alterTable(query: string, confirm: boolean = false) {
     try {
         if (!query.trim().toLowerCase().startsWith("alter table")) {
             throw new Error("只允许执行 ALTER TABLE 语句");
+        }
+
+        // 确认检查：防止误操作
+        if (!confirm) {
+            const tableName = extractTableName(query, "ALTER TABLE");
+            const tableInfo = tableName ? ` '${tableName}'` : '';
+            return formatSuccessResponse({
+                success: false,
+                message: `需要安全确认。设置 confirm=true 以继续修改表结构${tableInfo}。`
+            });
         }
 
         await dbExec(query);

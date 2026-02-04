@@ -50,16 +50,21 @@ export function handleListTools() {
             {
                 name: "write_query",
                 title: "Write Query",
-                description: "Execute INSERT, UPDATE, or DELETE queries to modify database data. " +
+                description: "Execute INSERT, UPDATE, DELETE, or TRUNCATE queries to modify database data. " +
                     "Returns the number of affected rows. " +
                     "Cannot be used for SELECT queries - use read_query instead. " +
-                    "Supports all database types: SQLite, SQL Server, PostgreSQL, MySQL.",
+                    "Supports all database types: SQLite, SQL Server, PostgreSQL, MySQL. " +
+                    "Requires confirm=true as a safety measure to prevent accidental data modification.",
                 inputSchema: {
                     type: "object",
                     properties: {
                         query: {
                             type: "string",
-                            description: "The SQL INSERT/UPDATE/DELETE query to execute"
+                            description: "The SQL INSERT/UPDATE/DELETE/TRUNCATE query to execute"
+                        },
+                        confirm: {
+                            type: "boolean",
+                            description: "Must be set to true to confirm data modification"
                         },
                     },
                     required: ["query"],
@@ -88,13 +93,18 @@ export function handleListTools() {
                 description: "Create a new table in the database using a CREATE TABLE statement. " +
                     "Supports all standard SQL table creation syntax including column definitions, " +
                     "constraints, indexes, and relationships. " +
-                    "Works with SQLite, SQL Server, PostgreSQL, and MySQL.",
+                    "Works with SQLite, SQL Server, PostgreSQL, and MySQL. " +
+                    "Requires confirm=true as a safety measure to prevent accidental table creation.",
                 inputSchema: {
                     type: "object",
                     properties: {
                         query: {
                             type: "string",
                             description: "The complete CREATE TABLE SQL statement"
+                        },
+                        confirm: {
+                            type: "boolean",
+                            description: "Must be set to true to confirm table creation"
                         },
                     },
                     required: ["query"],
@@ -123,13 +133,18 @@ export function handleListTools() {
                 description: "Modify an existing table's structure using ALTER TABLE statements. " +
                     "Supports adding columns, dropping columns, renaming columns, changing data types, " +
                     "and other table modifications. " +
-                    "The table must exist before alterations can be made.",
+                    "The table must exist before alterations can be made. " +
+                    "Requires confirm=true as a safety measure to prevent accidental schema changes.",
                 inputSchema: {
                     type: "object",
                     properties: {
                         query: {
                             type: "string",
                             description: "The ALTER TABLE SQL statement to modify table structure"
+                        },
+                        confirm: {
+                            type: "boolean",
+                            description: "Must be set to true to confirm table alteration"
                         },
                     },
                     required: ["query"],
@@ -305,13 +320,18 @@ export function handleListTools() {
                 description: "Add a business insight to the SQLite insights memo. " +
                     "Only works with SQLite databases - creates and uses an mcp_insights table. " +
                     "Each insight is stored with a timestamp for tracking. " +
-                    "Useful for maintaining notes during analysis sessions.",
+                    "Useful for maintaining notes during analysis sessions. " +
+                    "Requires confirm=true as a safety measure to prevent accidental data insertion.",
                 inputSchema: {
                     type: "object",
                     properties: {
                         insight: {
                             type: "string",
                             description: "The business insight text to store in the memo"
+                        },
+                        confirm: {
+                            type: "boolean",
+                            description: "Must be set to true to confirm adding the insight"
                         },
                     },
                     required: ["insight"],
@@ -388,13 +408,13 @@ export async function handleToolCall(name: string, args: any) {
                 return await readQuery(args.query);
 
             case "write_query":
-                return await writeQuery(args.query);
+                return await writeQuery(args.query, args.confirm);
 
             case "create_table":
-                return await createTable(args.query);
+                return await createTable(args.query, args.confirm);
 
             case "alter_table":
-                return await alterTable(args.query);
+                return await alterTable(args.query, args.confirm);
 
             case "drop_table":
                 return await dropTable(args.table_name, args.confirm);
@@ -409,7 +429,7 @@ export async function handleToolCall(name: string, args: any) {
                 return await describeTable(args.table_name);
 
             case "append_insight":
-                return await appendInsight(args.insight);
+                return await appendInsight(args.insight, args.confirm);
 
             case "list_insights":
                 return await listInsights();

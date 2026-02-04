@@ -22,9 +22,10 @@ export async function readQuery(query: string) {
 /**
  * 执行数据修改 SQL 查询
  * @param query 要执行的 SQL 查询
+ * @param confirm 安全确认标志（默认 false，防止误操作）
  * @returns 受影响行的信息
  */
-export async function writeQuery(query: string) {
+export async function writeQuery(query: string, confirm: boolean = false) {
     try {
         const lowerQuery = query.trim().toLowerCase();
 
@@ -32,8 +33,20 @@ export async function writeQuery(query: string) {
             throw new Error("SELECT 操作请使用 read_query");
         }
 
-        if (!(lowerQuery.startsWith("insert") || lowerQuery.startsWith("update") || lowerQuery.startsWith("delete"))) {
-            throw new Error("write_query 只允许执行 INSERT、UPDATE 或 DELETE 操作");
+        // 支持 INSERT、UPDATE、DELETE 和 TRUNCATE 操作
+        const supportedOperations = ["insert", "update", "delete", "truncate"];
+        const operation = supportedOperations.find(op => lowerQuery.startsWith(op));
+
+        if (!operation) {
+            throw new Error("write_query 只允许执行 INSERT、UPDATE、DELETE 或 TRUNCATE 操作");
+        }
+
+        // 确认检查：防止误操作
+        if (!confirm) {
+            return formatSuccessResponse({
+                success: false,
+                message: `需要安全确认。设置 confirm=true 以继续执行 ${operation.toUpperCase()} 操作。`
+            });
         }
 
         const result = await dbRun(query);

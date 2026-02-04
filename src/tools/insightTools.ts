@@ -4,12 +4,21 @@ import {formatSuccessResponse} from '../utils/formatUtils.js';
 /**
  * 添加业务洞察到备忘录
  * @param insight 业务洞察文本
- * @returns 操作结果
+ * @param confirm 安全确认标志（默认 false，防止误操作）
+ * @returns 操作结果，包含新增记录的 ID
  */
-export async function appendInsight(insight: string) {
+export async function appendInsight(insight: string, confirm: boolean = false) {
     try {
         if (!insight) {
             throw new Error("洞察内容不能为空");
+        }
+
+        // 确认检查：防止误操作
+        if (!confirm) {
+            return formatSuccessResponse({
+                success: false,
+                message: "需要安全确认。设置 confirm=true 以继续添加洞察。"
+            });
         }
 
         // 如果 insights 表不存在则创建
@@ -21,13 +30,17 @@ export async function appendInsight(insight: string) {
       )
     `);
 
-        // 插入洞察记录
-        await dbRun(
+        // 插入洞察记录并获取返回的 ID
+        const result = await dbRun(
             "INSERT INTO mcp_insights (insight) VALUES (?)",
             [insight]
         );
 
-        return formatSuccessResponse({success: true, message: "洞察已添加"});
+        return formatSuccessResponse({
+            success: true,
+            message: "洞察已添加",
+            id: result.lastID
+        });
     } catch (error: any) {
         throw new Error(`添加洞察失败: ${error.message}`);
     }
