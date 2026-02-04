@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 项目信息
 
 - **包名**: `@cmd233/mcp-database-server`
-- **版本**: 1.1.7
+- **版本**: 参见 package.json (当前: 1.1.7)
 - **类型**: ESM 模块 (使用 `NodeNext` 模块系统)
 - **描述**: MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases (Fixed nullable field detection)
 - **NPM 包别名**: `@executeautomation/database-server` (用于全局安装)
@@ -114,6 +114,11 @@ npm run start
 - `npm run prepare` 会在 `npm install` 时自动执行构建
 - 项目没有配置测试或 lint 命令
 
+**运行示例代码**:
+```bash
+npm run example  # 运行 examples/example.js,查看 Claude Desktop 配置示例和示例提示词
+```
+
 ## 项目结构
 
 ```
@@ -163,6 +168,26 @@ node dist/src/index.js --mysql --aws-iam-auth --host <rds> --database <db> --use
 ```
 
 **注意**: SQL Server 在未提供用户名和密码时将使用 Windows 集成认证。
+
+## Docker 部署
+
+项目提供 Dockerfile 支持,可以使用 Docker 容器运行 MCP 数据库服务器:
+
+```bash
+# 构建镜像
+docker build -t mcp-database-server .
+
+# 运行 SQLite 示例
+docker run -v /path/to/database.db:/data/db mcp-database-server /data/db
+
+# 运行 SQL Server 示例
+docker run mcp-database-server --sqlserver --server <host> --database <db>
+```
+
+**注意**:
+- Dockerfile 基于 `node:20-alpine` 镜像构建
+- 构建过程中会自动执行 `npm run build`
+- 默认入口点为 `node dist/index.js`
 
 ## MCP 工具列表
 
@@ -341,3 +366,36 @@ SQL Server 的 `INFORMATION_SCHEMA.COLUMNS.IS_NULLABLE` 列返回 'YES'(可空)�
 - 日志消息已中文化
 - 保持了代码逻辑和功能不变
 - 方便中文开发者理解和维护
+
+## 相关文档
+
+项目包含一个完整的 Docusaurus 文档站点 (`docs/` 目录),提供更详细的使用指南和示例:
+
+### 用户文档
+
+- `docs/docs/getting-started.md` - 快速入门指南
+- `docs/docs/sqlite-setup.md` - SQLite 连接详细指南
+- `docs/docs/sql-server-setup.md` - SQL Server 连接详细指南
+- `docs/docs/postgresql-setup.md` - PostgreSQL 连接详细指南
+- `docs/docs/usage-examples.md` - Claude 使用示例和命令(英文)
+- `docs/docs/connection-reference.md` - 连接参数参考
+- `docs/docs/database-tools.md` - 数据库工具详细说明
+
+### 运行文档站点
+
+```bash
+cd docs
+npm install
+npm run start
+```
+
+文档站点将在 `http://localhost:3000` 启动。
+
+### 示例代码
+
+- `examples/example.js` - 包含 Claude Desktop 配置示例和示例提示词
+
+运行示例代码:
+```bash
+npm run example
+```
