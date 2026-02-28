@@ -2,7 +2,7 @@ import {formatErrorResponse} from '../utils/formatUtils.js';
 
 // 导入所有工具实现
 import {readQuery, writeQuery, exportQuery} from '../tools/queryTools.js';
-import {createTable, alterTable, dropTable, listTables, describeTable} from '../tools/schemaTools.js';
+import {createTable, alterTable, dropTable, listTables, describeTable, listViews, describeView, getViewDefinition} from '../tools/schemaTools.js';
 import {appendInsight, listInsights} from '../tools/insightTools.js';
 
 /**
@@ -252,18 +252,30 @@ export function handleListTools() {
                 title: "List Tables",
                 description: "Retrieve a list of all table names in the current database. " +
                     "Returns only table names without structure details. " +
-                    "Use describe_table to get detailed column information for a specific table.",
+                    "Use describe_table to get detailed column information for a specific table. " +
+                    "Set include_views=true to also include database views (SQL Server only).",
                 inputSchema: {
                     type: "object",
-                    properties: {},
+                    properties: {
+                        include_views: {
+                            type: "boolean",
+                            description: "Set to true to include views in the result (SQL Server only)"
+                        },
+                    },
                 },
                 outputSchema: {
                     type: "object",
                     properties: {
                         tables: {
                             type: "array",
-                            items: {type: "string"},
-                            description: "Array of table names in the database"
+                            items: {
+                                type: "object",
+                                properties: {
+                                    name: {type: "string", description: "Table or view name"},
+                                    type: {type: "string", enum: ["table", "view"], description: "Object type"}
+                                }
+                            },
+                            description: "Array of table/view names and types in the database"
                         }
                     }
                 },
@@ -275,16 +287,17 @@ export function handleListTools() {
             {
                 name: "describe_table",
                 title: "Describe Table",
-                description: "Get detailed structural information about a specific table. " +
+                description: "Get detailed structural information about a specific table or view. " +
                     "Returns column name, data type, nullable status, default value, " +
                     "primary key status, and column comment (if supported). " +
-                    "The table must exist in the database.",
+                    "Supports both tables and views (SQL Server only for views). " +
+                    "The table or view must exist in the database.",
                 inputSchema: {
                     type: "object",
                     properties: {
                         table_name: {
                             type: "string",
-                            description: "Name of the table to describe"
+                            description: "Name of the table or view to describe"
                         },
                     },
                     required: ["table_name"],
@@ -292,6 +305,8 @@ export function handleListTools() {
                 outputSchema: {
                     type: "object",
                     properties: {
+                        name: {type: "string", description: "Table or view name"},
+                        type: {type: "string", enum: ["table", "view"], description: "Object type"},
                         columns: {
                             type: "array",
                             description: "Array of column definitions",
@@ -307,6 +322,107 @@ export function handleListTools() {
                                 }
                             }
                         }
+                    }
+                },
+                annotations: {
+                    readOnlyHint: true,
+                    idempotentHint: true
+                }
+            },
+            {
+                name: "list_views",
+                title: "List Views",
+                description: "Retrieve a list of all view names in the current database. " +
+                    "Only works with SQL Server databases. " +
+                    "Returns only view names without structure details. " +
+                    "Use describe_view to get detailed column information for a specific view.",
+                inputSchema: {
+                    type: "object",
+                    properties: {},
+                },
+                outputSchema: {
+                    type: "object",
+                    properties: {
+                        views: {
+                            type: "array",
+                            items: {type: "string"},
+                            description: "Array of view names in the database"
+                        }
+                    }
+                },
+                annotations: {
+                    readOnlyHint: true,
+                    idempotentHint: true
+                }
+            },
+            {
+                name: "describe_view",
+                title: "Describe View",
+                description: "Get detailed structural information about a specific view. " +
+                    "Only works with SQL Server databases. " +
+                    "Returns column name, data type, nullable status, default value, " +
+                    "primary key status, and column comment (if available). " +
+                    "The view must exist in the database.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        view_name: {
+                            type: "string",
+                            description: "Name of the view to describe"
+                        },
+                    },
+                    required: ["view_name"],
+                },
+                outputSchema: {
+                    type: "object",
+                    properties: {
+                        name: {type: "string", description: "View name"},
+                        type: {type: "string", description: "Always 'view'"},
+                        columns: {
+                            type: "array",
+                            description: "Array of column definitions",
+                            items: {
+                                type: "object",
+                                properties: {
+                                    name: {type: "string", description: "Column name"},
+                                    type: {type: "string", description: "Data type"},
+                                    notnull: {type: "boolean", description: "Whether the column is NOT NULL"},
+                                    default_value: {type: "string", description: "Default value"},
+                                    primary_key: {type: "boolean", description: "Whether the column is a primary key"},
+                                    comment: {type: "string", description: "Column comment"}
+                                }
+                            }
+                        }
+                    }
+                },
+                annotations: {
+                    readOnlyHint: true,
+                    idempotentHint: true
+                }
+            },
+            {
+                name: "get_view_definition",
+                title: "Get View Definition",
+                description: "Retrieve the SQL definition (CREATE VIEW statement) of a specific view. " +
+                    "Only works with SQL Server databases. " +
+                    "Returns the complete CREATE VIEW SQL statement. " +
+                    "Note: Views created WITH ENCRYPTION cannot have their definition retrieved.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        view_name: {
+                            type: "string",
+                            description: "Name of the view to get definition for"
+                        },
+                    },
+                    required: ["view_name"],
+                },
+                outputSchema: {
+                    type: "object",
+                    properties: {
+                        name: {type: "string", description: "View name"},
+                        definition: {type: "string", description: "CREATE VIEW SQL statement"},
+                        message: {type: "string", description: "Additional information if definition is unavailable"}
                     }
                 },
                 annotations: {
@@ -423,10 +539,19 @@ export async function handleToolCall(name: string, args: any) {
                 return await exportQuery(args.query, args.format);
 
             case "list_tables":
-                return await listTables();
+                return await listTables(args.include_views);
 
             case "describe_table":
                 return await describeTable(args.table_name);
+
+            case "list_views":
+                return await listViews();
+
+            case "describe_view":
+                return await describeView(args.view_name);
+
+            case "get_view_definition":
+                return await getViewDefinition(args.view_name);
 
             case "append_insight":
                 return await appendInsight(args.insight, args.confirm);

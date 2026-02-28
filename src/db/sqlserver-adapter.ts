@@ -246,17 +246,22 @@ export class SqlServerAdapter implements DbAdapter {
 
             // 如果是 INSERT,添加标识值的输出参数
             let lastID = 0;
+            let changes = 0;
             if (query.trim().toUpperCase().startsWith('INSERT')) {
                 request.output('insertedId', sql.Int, 0);
                 const updatedQuery = `${preparedQuery}; SELECT @insertedId = SCOPE_IDENTITY();`;
                 const result = await request.query(updatedQuery);
                 lastID = result.output.insertedId || 0;
+                // 使用 rowsAffected 获取受影响行数
+                changes = result.rowsAffected?.[0] || (lastID > 0 ? 1 : 0);
             } else {
-                await request.query(preparedQuery);
+                const result = await request.query(preparedQuery);
+                // 使用 rowsAffected 获取受影响行数
+                changes = result.rowsAffected?.[0] || 0;
             }
 
             return {
-                changes: this.getAffectedRows(query, lastID),
+                changes: changes,
                 lastID: lastID
             };
         });
@@ -294,8 +299,8 @@ export class SqlServerAdapter implements DbAdapter {
     }
 
     /**
-     * 获取描述表的数据库特定查询
-     * @param tableName 表名
+     * 获取描述表或视图的数据库特定查询
+     * @param tableName 表名或视图名
      */
     getDescribeTableQuery(tableName: string): string {
         return `
@@ -315,10 +320,11 @@ export class SqlServerAdapter implements DbAdapter {
       LEFT JOIN
         sys.extended_properties ep
           ON ep.major_id = (
-            SELECT t.object_id
-            FROM sys.tables t
-            INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
-            WHERE t.name = '${tableName}' AND s.name = c.TABLE_SCHEMA
+            SELECT o.object_id
+            FROM sys.objects o
+            INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
+            WHERE o.name = '${tableName}' AND s.name = c.TABLE_SCHEMA
+            AND o.type IN ('U', 'V')
           )
           AND ep.minor_id = c.ORDINAL_POSITION
           AND ep.name = 'MS_Description'
@@ -330,13 +336,25 @@ export class SqlServerAdapter implements DbAdapter {
     }
 
     /**
-     * 根据查询类型获取受影响行数的辅助方法
+     * 获取列出视图的数据库特定查询
      */
-    private getAffectedRows(query: string, lastID: number): number {
-        const queryType = query.trim().split(' ')[0].toUpperCase();
-        if (queryType === 'INSERT' && lastID > 0) {
-            return 1;
-        }
-        return 0; // 对于 SELECT 返回 0,对于 UPDATE/DELETE 在没有额外查询的情况下未知
+    getListViewsQuery(): string {
+        return "SELECT TABLE_NAME as name FROM INFORMATION_SCHEMA.VIEWS ORDER BY TABLE_NAME";
+    }
+
+    /**
+     * 获取视图定义的数据库特定查询
+     * @param viewName 视图名
+     * 注意: 使用 WITH ENCRYPTION 创建的视图无法获取定义
+     */
+    getViewDefinitionQuery(viewName: string): string {
+        return `SELECT VIEW_DEFINITION as definition FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = '${viewName}'`;
+    }
+
+    /**
+     * 检查数据库是否支持视图功能
+     */
+    supportsViews(): boolean {
+        return true;
     }
 }

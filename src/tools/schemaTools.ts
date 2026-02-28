@@ -1,5 +1,52 @@
-import {dbAll, dbExec, getListTablesQuery, getDescribeTableQuery} from '../db/index.js';
+import {dbAll, dbExec, getListTablesQuery, getDescribeTableQuery, getListViewsQuery, getViewDefinitionQuery, supportsViews} from '../db/index.js';
 import {formatSuccessResponse} from '../utils/formatUtils.js';
+
+/**
+ * 格式化后的列结构类型
+ */
+interface FormattedColumn {
+    name: string;
+    type: string;
+    notnull: boolean;
+    default_value: any;
+    primary_key: boolean;
+    comment: string | null;
+}
+
+/**
+ * 检查数据库对象是否存在
+ * @param objectName 对象名
+ * @param objectType 对象类型 ('table' | 'view')
+ * @returns 如果存在返回 true，否则返回 false
+ */
+async function checkObjectExists(objectName: string, objectType: 'table' | 'view'): Promise<boolean> {
+    if (objectType === 'table') {
+        const query = getListTablesQuery();
+        const objects = await dbAll(query);
+        return objects.some(obj => obj.name === objectName);
+    } else if (supportsViews()) {
+        const query = getListViewsQuery();
+        const objects = await dbAll(query);
+        return objects.some(obj => obj.name === objectName);
+    }
+    return false;
+}
+
+/**
+ * 格式化列结构信息
+ * @param columns 原始列数据数组
+ * @returns 格式化后的列数组
+ */
+function formatColumns(columns: any[]): FormattedColumn[] {
+    return columns.map((col) => ({
+        name: col.name,
+        type: col.type,
+        notnull: !!col.notnull,
+        default_value: col.dflt_value,
+        primary_key: !!col.pk,
+        comment: col.comment || null
+    }));
+}
 
 /**
  * 从 SQL 语句中提取表名
@@ -117,12 +164,8 @@ export async function dropTable(tableName: string, confirm: boolean) {
             });
         }
 
-        // First check if table exists by directly querying for tables
-        const query = getListTablesQuery();
-        const tables = await dbAll(query);
-        const tableNames = tables.map(t => t.name);
-
-        if (!tableNames.includes(tableName)) {
+        // 检查表是否存在
+        if (!(await checkObjectExists(tableName, 'table'))) {
             throw new Error(`表 '${tableName}' 不存在`);
         }
 
@@ -140,14 +183,24 @@ export async function dropTable(tableName: string, confirm: boolean) {
 
 /**
  * 列出数据库中的所有表
+ * @param includeViews 是否包含视图（默认 false）
  * @returns 表名数组
  */
-export async function listTables() {
+export async function listTables(includeViews: boolean = false) {
     try {
         // 使用适配器特定的查询来列出表
         const query = getListTablesQuery();
         const tables = await dbAll(query);
-        return formatSuccessResponse(tables.map((t) => t.name));
+        const result = tables.map((t) => ({name: t.name, type: 'table'}));
+
+        // 如果需要包含视图且数据库支持视图
+        if (includeViews && supportsViews()) {
+            const viewsQuery = getListViewsQuery();
+            const views = await dbAll(viewsQuery);
+            result.push(...views.map((v) => ({name: v.name, type: 'view'} as const)));
+        }
+
+        return formatSuccessResponse(result);
     } catch (error: any) {
         throw new Error(`列出表失败: ${error.message}`);
     }
@@ -155,8 +208,9 @@ export async function listTables() {
 
 /**
  * 获取指定表的结构信息
- * @param tableName 要描述的表名
- * @returns 表的列定义
+ * 支持实体表和视图
+ * @param tableName 要描述的表名或视图名
+ * @returns 表/视图的列定义
  */
 export async function describeTable(tableName: string) {
     try {
@@ -164,28 +218,124 @@ export async function describeTable(tableName: string) {
             throw new Error("表名不能为空");
         }
 
-        // 首先通过直接查询来检查表是否存在
-        const query = getListTablesQuery();
-        const tables = await dbAll(query);
-        const tableNames = tables.map(t => t.name);
+        // 检查是表还是视图
+        let objectType: 'table' | 'view' = 'table';
 
-        if (!tableNames.includes(tableName)) {
-            throw new Error(`Table '${tableName}' does not exist`);
+        if (await checkObjectExists(tableName, 'table')) {
+            objectType = 'table';
+        } else if (supportsViews() && await checkObjectExists(tableName, 'view')) {
+            objectType = 'view';
+        } else {
+            throw new Error(supportsViews() ? `表或视图 '${tableName}' 不存在` : `表 '${tableName}' 不存在`);
         }
 
-        // 使用适配器特定的查询来描述表结构
+        // 使用适配器特定的查询来描述表/视图结构
         const descQuery = getDescribeTableQuery(tableName);
         const columns = await dbAll(descQuery);
 
-        return formatSuccessResponse(columns.map((col) => ({
-            name: col.name,
-            type: col.type,
-            notnull: !!col.notnull,
-            default_value: col.dflt_value,
-            primary_key: !!col.pk,
-            comment: col.comment || null
-        })));
+        return formatSuccessResponse({
+            name: tableName,
+            type: objectType,
+            columns: formatColumns(columns)
+        });
     } catch (error: any) {
         throw new Error(`描述表结构失败: ${error.message}`);
+    }
+}
+
+/**
+ * 列出数据库中的所有视图
+ * 仅支持 SQL Server
+ * @returns 视图名数组
+ */
+export async function listViews() {
+    try {
+        if (!supportsViews()) {
+            throw new Error("视图功能仅支持 SQL Server 数据库");
+        }
+
+        const query = getListViewsQuery();
+        const views = await dbAll(query);
+        return formatSuccessResponse(views.map((v) => v.name));
+    } catch (error: any) {
+        throw new Error(`列出视图失败: ${error.message}`);
+    }
+}
+
+/**
+ * 获取指定视图的结构信息
+ * 仅支持 SQL Server
+ * @param viewName 视图名
+ * @returns 视图的列定义
+ */
+export async function describeView(viewName: string) {
+    try {
+        if (!viewName) {
+            throw new Error("视图名不能为空");
+        }
+
+        if (!supportsViews()) {
+            throw new Error("视图功能仅支持 SQL Server 数据库");
+        }
+
+        // 检查视图是否存在
+        if (!(await checkObjectExists(viewName, 'view'))) {
+            throw new Error(`视图 '${viewName}' 不存在`);
+        }
+
+        // 使用相同的 describe 查询获取视图列结构
+        const descQuery = getDescribeTableQuery(viewName);
+        const columns = await dbAll(descQuery);
+
+        return formatSuccessResponse({
+            name: viewName,
+            type: 'view',
+            columns: formatColumns(columns)
+        });
+    } catch (error: any) {
+        throw new Error(`描述视图结构失败: ${error.message}`);
+    }
+}
+
+/**
+ * 获取视图的定义 SQL
+ * 仅支持 SQL Server
+ * 注意: 使用 WITH ENCRYPTION 创建的视图无法获取定义
+ * @param viewName 视图名
+ * @returns 视图定义 SQL
+ */
+export async function getViewDefinition(viewName: string) {
+    try {
+        if (!viewName) {
+            throw new Error("视图名不能为空");
+        }
+
+        if (!supportsViews()) {
+            throw new Error("视图功能仅支持 SQL Server 数据库");
+        }
+
+        // 检查视图是否存在
+        if (!(await checkObjectExists(viewName, 'view'))) {
+            throw new Error(`视图 '${viewName}' 不存在`);
+        }
+
+        // 获取视图定义
+        const defQuery = getViewDefinitionQuery(viewName);
+        const result = await dbAll(defQuery);
+
+        if (result.length === 0 || !result[0].definition) {
+            return formatSuccessResponse({
+                name: viewName,
+                definition: null,
+                message: "视图定义不可用（可能使用 WITH ENCRYPTION 创建）"
+            });
+        }
+
+        return formatSuccessResponse({
+            name: viewName,
+            definition: result[0].definition
+        });
+    } catch (error: any) {
+        throw new Error(`获取视图定义失败: ${error.message}`);
     }
 } 

@@ -108,4 +108,44 @@ export function getDescribeTableQuery(tableName: string): string {
         throw new Error("数据库未初始化");
     }
     return dbAdapter.getDescribeTableQuery(tableName);
+}
+
+/**
+ * 获取列出视图的数据库特定查询
+ * 仅 SQL Server 支持，其他数据库返回空结果
+ */
+export function getListViewsQuery(): string {
+    if (!dbAdapter) {
+        throw new Error("数据库未初始化");
+    }
+    if (dbAdapter.getListViewsQuery) {
+        return dbAdapter.getListViewsQuery();
+    }
+    // 不支持视图的数据库返回空结果查询
+    return "SELECT 1 as name WHERE 1=0";
+}
+
+/**
+ * 获取视图定义的数据库特定查询
+ * 仅 SQL Server 支持
+ * @param viewName 视图名
+ */
+export function getViewDefinitionQuery(viewName: string): string {
+    if (!dbAdapter) {
+        throw new Error("数据库未初始化");
+    }
+    if (dbAdapter.getViewDefinitionQuery) {
+        return dbAdapter.getViewDefinitionQuery(viewName);
+    }
+    throw new Error("当前数据库不支持视图功能");
+}
+
+/**
+ * 检查数据库是否支持视图功能
+ */
+export function supportsViews(): boolean {
+    if (!dbAdapter) {
+        return false;
+    }
+    return dbAdapter.supportsViews ? dbAdapter.supportsViews() : false;
 } 

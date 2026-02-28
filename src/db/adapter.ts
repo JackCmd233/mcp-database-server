@@ -48,6 +48,25 @@ export interface DbAdapter {
      * @param tableName 表名
      */
     getDescribeTableQuery(tableName: string): string;
+
+    /**
+     * 获取列出视图的数据库特定查询（可选）
+     * 仅 SQL Server 支持
+     */
+    getListViewsQuery?(): string;
+
+    /**
+     * 获取视图定义的数据库特定查询（可选）
+     * 仅 SQL Server 支持
+     * @param viewName 视图名
+     */
+    getViewDefinitionQuery?(viewName: string): string;
+
+    /**
+     * 检查数据库是否支持视图功能（可选）
+     * 默认返回 false
+     */
+    supportsViews?(): boolean;
 }
 
 // 使用动态导入适配器

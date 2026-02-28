@@ -17,6 +17,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **支持的数据库**: SQLite、SQL Server、PostgreSQL、MySQL
 
+## 快速开始
+
+```bash
+# 安装依赖
+npm install
+
+# 构建项目
+npm run build
+
+# 运行服务器 (SQLite)
+node dist/src/index.js /path/to/database.db
+
+# 开发模式 (构建并运行)
+npm run dev -- /path/to/database.db
+```
+
+**常用数据库连接示例:**
+```bash
+# SQL Server (Windows 集成认证)
+node dist/src/index.js --sqlserver --server localhost --database mydb
+
+# PostgreSQL
+node dist/src/index.js --postgresql --host localhost --port 5432 --database mydb --user postgres --password secret
+
+# MySQL
+node dist/src/index.js --mysql --host localhost --port 3306 --database mydb --user root --password secret
+```
+
 ## 项目信息
 
 - **包名**: `@cmd233/mcp-database-server`
@@ -103,9 +131,6 @@ npm run watch
 # 清理构建目录
 npm run clean
 
-# 运行示例
-npm run example
-
 # 直接运行已构建的服务器
 npm run start
 ```
@@ -113,11 +138,6 @@ npm run start
 **注意**:
 - `npm run prepare` 会在 `npm install` 时自动执行构建
 - 项目没有配置测试或 lint 命令
-
-**运行示例代码**:
-```bash
-npm run example  # 运行 examples/example.js,查看 Claude Desktop 配置示例和示例提示词
-```
 
 ## 项目结构
 
@@ -144,65 +164,37 @@ src/
 
 ## 运行服务器
 
-服务器提供两个可执行命令:
-- `ea-database-server` - 别名命令
-- `mcp-database-server` - 主命令
-
-### 使用方式
-
 ```bash
 # SQLite(默认)
 node dist/src/index.js /path/to/database.db
 
-# SQL Server (支持 Windows 集成认证)
-node dist/src/index.js --sqlserver --server <server> --database <db> [--user] [--password] [--port]
-
-# PostgreSQL
-node dist/src/index.js --postgresql --host <host> --database <db> [--user] [--password] [--port] [--ssl] [--connection-timeout]
-
-# MySQL
-node dist/src/index.js --mysql --host <host> --database <db> --port <port> [--user] [--password] [--ssl] [--connection-timeout]
-
-# MySQL with AWS IAM
-node dist/src/index.js --mysql --aws-iam-auth --host <rds> --database <db> --user <user> --aws-region <region>
+# 其他数据库使用相应标志: --sqlserver、--postgresql、--mysql
+# 详细参数参见 README.md
 ```
 
 **注意**: SQL Server 在未提供用户名和密码时将使用 Windows 集成认证。
 
 ## Docker 部署
 
-项目提供 Dockerfile 支持,可以使用 Docker 容器运行 MCP 数据库服务器:
-
-```bash
-# 构建镜像
-docker build -t mcp-database-server .
-
-# 运行 SQLite 示例
-docker run -v /path/to/database.db:/data/db mcp-database-server /data/db
-
-# 运行 SQL Server 示例
-docker run mcp-database-server --sqlserver --server <host> --database <db>
-```
-
-**注意**:
-- Dockerfile 基于 `node:20-alpine` 镜像构建
-- 构建过程中会自动执行 `npm run build`
-- 默认入口点为 `node dist/index.js`
+支持 Docker 部署,详见 README.md 和 Dockerfile。
 
 ## MCP 工具列表
 
-| 工具 | 功能 | 验证规则 |
-|------|------|----------|
-| `read_query` | 执行 SELECT 查询 | 必须以 "SELECT" 开头 |
-| `write_query` | 执行 INSERT/UPDATE/DELETE | 必须以 "INSERT"、"UPDATE" 或 "DELETE" 开头,不能是 SELECT |
-| `create_table` | 创建新表 | 必须以 "CREATE TABLE" 开头 |
-| `alter_table` | 修改表结构 | 必须以 "ALTER TABLE" 开头 |
-| `drop_table` | 删除表(需要 confirm=true) | 需要确认参数 `confirm=true` |
-| `list_tables` | 列出所有表 | 无特定验证 |
-| `describe_table` | 获取表结构 | 需要表名参数 |
-| `export_query` | 导出查询结果(CSV/JSON) | 必须以 "SELECT" 开头 |
-| `append_insight` | 添加业务洞察到备忘录 | **注意**: 仅支持 SQLite 数据库 |
-| `list_insights` | 列出所有业务洞察 | **注意**: 仅支持 SQLite 数据库 |
+| 工具 | 功能 |
+|------|------|
+| `read_query` | 执行 SELECT 查询 |
+| `write_query` | 执行 INSERT/UPDATE/DELETE/TRUNCATE |
+| `create_table` | 创建新表 |
+| `alter_table` | 修改表结构 |
+| `drop_table` | 删除表 |
+| `list_tables` | 列出所有表 |
+| `describe_table` | 获取表结构 |
+| `export_query` | 导出查询结果(CSV/JSON) |
+| `append_insight` | 添加业务洞察到备忘录 (**仅 SQLite**) |
+| `list_insights` | 列出所有业务洞察 (**仅 SQLite**) |
+| `list_views` | 列出所有视图 (**仅 SQL Server**) |
+| `describe_view` | 获取视图结构 (**仅 SQL Server**) |
+| `get_view_definition` | 获取视图定义 SQL (**仅 SQL Server**) |
 
 ## MCP 资源列表
 
@@ -235,24 +227,18 @@ docker run mcp-database-server --sqlserver --server <host> --database <db>
 ```
 Claude Code 请求工具列表
     ↓
-MCP Server → handleListTools() → 返回 10 个工具定义
+MCP Server → handleListTools() → 返回 13 个工具定义
     ↓
 Claude Code 调用工具(带参数)
     ↓
 MCP Server → handleToolCall(name, args) → 路由到具体工具函数
     ↓
+【修改类工具】检查 confirm 参数 → 未确认则返回提示
+    ↓
 工具函数 → SQL 验证 → db/index.ts 统一 API → 适配器 → 数据库操作
     ↓
 结果逐层返回 → formatSuccessResponse() → 发送给 Claude Code
 ```
-
-**请求处理细节**:
-1. **工具列表阶段**: Claude Code 启动时请求可用工具列表
-2. **工具调用阶段**: Claude Code 根据用户请求选择合适的工具并传递参数
-3. **SQL 验证**: 工具函数验证 SQL 语句类型是否符合预期(防止误操作)
-4. **统一 API 层**: `db/index.ts` 提供一致的数据库操作接口
-5. **适配器层**: 将通用调用转换为各数据库特定的 SQL 和参数格式
-6. **响应格式化**: `formatSuccessResponse()` 将结果标准化为 MCP 响应格式
 
 ## 重要约定
 
@@ -329,6 +315,24 @@ const logger = {
    - SQL Server 适配器在未提供用户名/密码时自动启用
    - 设置 `options.trustedConnection = true`
 
+## 安全确认机制
+
+数据修改工具（`write_query`、`create_table`、`alter_table`、`drop_table`、`append_insight`）需要 `confirm=true` 参数才能执行：
+
+1. **默认调用**（`confirm` 未设置或 `false`）：返回提示消息，不执行操作
+2. **确认调用**（`confirm=true`）：执行实际操作
+
+**示例**：
+```typescript
+// 未确认时返回提示
+writeQuery("DELETE FROM users WHERE id = 1");
+// 返回: { success: false, message: "需要安全确认。设置 confirm=true 以继续执行 DELETE 操作。" }
+
+// 确认后执行
+writeQuery("DELETE FROM users WHERE id = 1", true);
+// 返回: { affected_rows: 1 }
+```
+
 ## 参数占位符转换
 
 不同数据库使用不同的参数占位符,适配器会自动将通用的 `?` 占位符转换为各数据库特定的格式:
@@ -369,33 +373,4 @@ SQL Server 的 `INFORMATION_SCHEMA.COLUMNS.IS_NULLABLE` 列返回 'YES'(可空)�
 
 ## 相关文档
 
-项目包含一个完整的 Docusaurus 文档站点 (`docs/` 目录),提供更详细的使用指南和示例:
-
-### 用户文档
-
-- `docs/docs/getting-started.md` - 快速入门指南
-- `docs/docs/sqlite-setup.md` - SQLite 连接详细指南
-- `docs/docs/sql-server-setup.md` - SQL Server 连接详细指南
-- `docs/docs/postgresql-setup.md` - PostgreSQL 连接详细指南
-- `docs/docs/usage-examples.md` - Claude 使用示例和命令(英文)
-- `docs/docs/connection-reference.md` - 连接参数参考
-- `docs/docs/database-tools.md` - 数据库工具详细说明
-
-### 运行文档站点
-
-```bash
-cd docs
-npm install
-npm run start
-```
-
-文档站点将在 `http://localhost:3000` 启动。
-
-### 示例代码
-
-- `examples/example.js` - 包含 Claude Desktop 配置示例和示例提示词
-
-运行示例代码:
-```bash
-npm run example
-```
+详细使用指南见 `docs/` 目录 (Docusaurus 站点): `cd docs && npm install && npm run start`

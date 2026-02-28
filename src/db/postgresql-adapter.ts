@@ -73,7 +73,8 @@ export class PostgresqlAdapter implements DbAdapter {
 
         try {
             // PostgreSQL 使用 $1, $2 等作为参数化查询的占位符
-            const preparedQuery = query.replace(/\?/g, (_, i) => `$${i + 1}`);
+            let paramIndex = 0;
+            const preparedQuery = query.replace(/\?/g, () => `$${++paramIndex}`);
 
             const result = await this.client.query(preparedQuery, params);
             return result.rows;
@@ -95,7 +96,8 @@ export class PostgresqlAdapter implements DbAdapter {
 
         try {
             // 将 ? 替换为编号参数
-            const preparedQuery = query.replace(/\?/g, (_, i) => `$${i + 1}`);
+            let paramIndex = 0;
+            const preparedQuery = query.replace(/\?/g, () => `$${++paramIndex}`);
 
             let lastID = 0;
             let changes = 0;
