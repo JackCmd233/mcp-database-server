@@ -48,9 +48,9 @@ node dist/src/index.js --mysql --host localhost --port 3306 --database mydb --us
 ## 项目信息
 
 - **包名**: `@cmd233/mcp-database-server`
-- **版本**: 参见 package.json (当前: 1.1.7)
+- **版本**: 参见 package.json (当前: 1.2.0)
 - **类型**: ESM 模块 (使用 `NodeNext` 模块系统)
-- **描述**: MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases (Fixed nullable field detection)
+- **描述**: MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases
 - **NPM 包别名**: `@executeautomation/database-server` (用于全局安装)
 
 ### 核心依赖
@@ -100,6 +100,8 @@ src/db/adapter.ts (适配器接口层)
 ### 关键接口
 
 所有数据库适配器必须实现 `src/db/adapter.ts` 中定义的 `DbAdapter` 接口:
+
+**必需方法:**
 - `init()` - 初始化连接
 - `close()` - 关闭连接
 - `all(query, params?)` - 执行查询返回所有结果
@@ -108,6 +110,11 @@ src/db/adapter.ts (适配器接口层)
 - `getMetadata()` - 获取数据库元数据
 - `getListTablesQuery()` - 获取列出表的查询
 - `getDescribeTableQuery(tableName)` - 获取表结构查询(返回包含 `comment` 字段的列注释)
+
+**可选方法 (视图支持):**
+- `getListViewsQuery?()` - 获取列出视图的查询
+- `getViewDefinitionQuery?(viewName)` - 获取视图定义的查询
+- `supportsViews?()` - 检查是否支持视图功能
 
 ### 数据库适配器
 
@@ -138,6 +145,21 @@ npm run start
 **注意**:
 - `npm run prepare` 会在 `npm install` 时自动执行构建
 - 项目没有配置测试或 lint 命令
+
+## 发布流程
+
+```bash
+# 1. 更新 package.json 版本号
+# 2. 构建并验证
+npm run build
+node dist/src/index.js --help
+
+# 3. 发布到 npm
+npm publish
+
+# 4. 创建 Git 标签并推送
+git tag v1.x.x && git push --tags
+```
 
 ## 项目结构
 
@@ -227,7 +249,7 @@ node dist/src/index.js /path/to/database.db
 ```
 Claude Code 请求工具列表
     ↓
-MCP Server → handleListTools() → 返回 13 个工具定义
+MCP Server → handleListTools() → 返回 14 个工具定义
     ↓
 Claude Code 调用工具(带参数)
     ↓

@@ -12,7 +12,7 @@ npm install -g @executeautomation/database-server
 
 ## 配置步骤
 
-1. **选择您的数据库类型**: MCP 数据库服务器支持 SQLite、SQL Server 和 PostgreSQL
+1. **选择您的数据库类型**: MCP 数据库服务器支持 SQLite、SQL Server、PostgreSQL 和 MySQL
 2. **配置 Claude Desktop**: 更新您的 Claude 配置文件以连接到数据库
 3. **重启 Claude Desktop**: 应用配置更改
 4. **开始对话**: 通过 Claude 开始与数据库交互
@@ -80,6 +80,27 @@ npm install -g @executeautomation/database-server
 }
 ```
 
+### MySQL
+
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@executeautomation/database-server",
+        "--mysql",
+        "--host", "your-host-name",
+        "--database", "your-database-name",
+        "--user", "your-username",
+        "--password", "your-password"
+      ]
+    }
+  }
+}
+```
+
 ## 第一次对话
 
 一旦设置了 MCP 数据库服务器,您就可以通过 Claude 开始与数据库交互。以下是一个示例对话:
@@ -115,3 +136,4 @@ npm install -g @executeautomation/database-server
   - [SQLite 设置](sqlite-setup.md)
   - [SQL Server 设置](sql-server-setup.md)
   - [PostgreSQL 设置](postgresql-setup.md)
+  - MySQL: 参考 [连接参考](connection-reference.md) 中的 MySQL 部分

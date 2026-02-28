@@ -123,13 +123,22 @@ node dist/src/index.js --mysql --aws-iam-auth --host rds-endpoint.region.rds.ama
 - `PGPASSWORD` - PostgreSQL 密码
 - `PGPORT` - PostgreSQL 端口
 
+### MySQL 环境变量
+
+- `MYSQL_HOST` - MySQL 主机名
+- `MYSQL_DATABASE` - 数据库名称
+- `MYSQL_USER` - MySQL 用户名
+- `MYSQL_PASSWORD` - MySQL 密码
+- `MYSQL_PORT` - MySQL 端口
+
 ## 连接池
 
-所有数据库连接都使用连接池以获得更好的性能:
+数据库连接策略:
 
 - **SQLite**: 使用单个持久连接
-- **SQL Server**: 默认连接池为 5 个连接
-- **PostgreSQL**: 默认连接池为 10 个连接
+- **SQL Server**: 使用连接池 (max: 10, min: 1, idleTimeoutMillis: 30000)
+- **PostgreSQL**: 使用单个持久连接
+- **MySQL**: 使用单个持久连接
 
 ## 连接安全
 

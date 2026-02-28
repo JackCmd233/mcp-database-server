@@ -105,6 +105,8 @@ node dist/src/index.js --mysql --host <host-name> --database <database-name> --p
 必需参数:
 - `--host`: MySQL 主机名或 IP 地址
 - `--database`: 数据库名称
+
+可选参数:
 - `--port`: 端口号(默认: 3306)
 
 可选参数:
@@ -285,15 +287,18 @@ MCP 数据库服务器提供以下可供 Claude 使用的工具:
 | 工具 | 描述 | 必需参数 |
 |------|-------------|---------------------|
 | `read_query` | 执行 SELECT 查询以读取数据 | `query`: SQL SELECT 语句 |
-| `write_query` | 执行 INSERT、UPDATE 或 DELETE 查询 | `query`: SQL 修改语句 |
-| `create_table` | 在数据库中创建新表 | `query`: CREATE TABLE 语句 |
-| `alter_table` | 修改现有表架构 | `query`: ALTER TABLE 语句 |
+| `write_query` | 执行 INSERT、UPDATE、DELETE 或 TRUNCATE 查询 | `query`: SQL 修改语句<br>`confirm`: 安全标志(必须为 true) |
+| `create_table` | 在数据库中创建新表 | `query`: CREATE TABLE 语句<br>`confirm`: 安全标志(必须为 true) |
+| `alter_table` | 修改现有表架构 | `query`: ALTER TABLE 语句<br>`confirm`: 安全标志(必须为 true) |
 | `drop_table` | 从数据库中删除表 | `table_name`: 表名<br>`confirm`: 安全标志(必须为 true) |
 | `list_tables` | 获取所有表的列表 | 无 |
 | `describe_table` | 查看表的架构信息 | `table_name`: 表名 |
 | `export_query` | 将查询结果导出为 CSV/JSON | `query`: SQL SELECT 语句<br>`format`: "csv" 或 "json" |
-| `append_insight` | 添加业务洞察到备忘录 | `insight`: 洞察文本 |
-| `list_insights` | 列出所有业务洞察 | 无 |
+| `append_insight` | 添加业务洞察到备忘录 (**仅 SQLite**) | `insight`: 洞察文本<br>`confirm`: 安全标志(必须为 true) |
+| `list_insights` | 列出所有业务洞察 (**仅 SQLite**) | 无 |
+| `list_views` | 列出所有视图 (**仅 SQL Server**) | 无 |
+| `describe_view` | 获取视图结构 (**仅 SQL Server**) | `view_name`: 视图名 |
+| `get_view_definition` | 获取视图定义 SQL (**仅 SQL Server**) | `view_name`: 视图名 |
 
 有关如何在 Claude 中使用这些工具的实际示例,请参阅[使用示例](docs/usage-examples.md)。
 

@@ -7,15 +7,18 @@ MCP 数据库服务器提供了一组 Claude 可用于与数据库交互的工�
 | 工具 | 描述 | 必需参数 |
 |------|-------------|---------------------|
 | `read_query` | 执行 SELECT 查询以读取数据 | `query`: SQL SELECT 语句 |
-| `write_query` | 执行 INSERT、UPDATE 或 DELETE 查询 | `query`: SQL 修改语句 |
-| `create_table` | 在数据库中创建新表 | `query`: CREATE TABLE 语句 |
-| `alter_table` | 修改现有表架构 | `query`: ALTER TABLE 语句 |
+| `write_query` | 执行 INSERT、UPDATE、DELETE 或 TRUNCATE 查询 | `query`: SQL 修改语句<br/>`confirm`: 安全标志(必须为 true) |
+| `create_table` | 在数据库中创建新表 | `query`: CREATE TABLE 语句<br/>`confirm`: 安全标志(必须为 true) |
+| `alter_table` | 修改现有表架构 | `query`: ALTER TABLE 语句<br/>`confirm`: 安全标志(必须为 true) |
 | `drop_table` | 从数据库中删除表 | `table_name`: 表名<br/>`confirm`: 安全标志(必须为 true) |
 | `list_tables` | 获取所有表的列表 | 无 |
 | `describe_table` | 查看表的架构信息 | `table_name`: 表名 |
 | `export_query` | 将查询结果导出为 CSV/JSON | `query`: SQL SELECT 语句<br/>`format`: "csv" 或 "json" |
-| `append_insight` | 将业务洞察添加到备忘录 | `insight`: 洞察文本 |
-| `list_insights` | 列出所有业务洞察 | 无 |
+| `append_insight` | 将业务洞察添加到备忘录 (**仅 SQLite**) | `insight`: 洞察文本<br/>`confirm`: 安全标志(必须为 true) |
+| `list_insights` | 列出所有业务洞察 (**仅 SQLite**) | 无 |
+| `list_views` | 列出所有视图 (**仅 SQL Server**) | 无 |
+| `describe_view` | 获取视图结构 (**仅 SQL Server**) | `view_name`: 视图名 |
+| `get_view_definition` | 获取视图定义 SQL (**仅 SQL Server**) | `view_name`: 视图名 |
 
 ## 工具使用示例
 
@@ -87,6 +90,10 @@ Claude 将使用 `append_insight` 工具记录此信息。
 
 2. 出于安全原因,文件操作和系统命令不可用。
 
-3. SQLite、SQL Server 和 PostgreSQL 之间可能存在轻微的语法差异。Claude 会尝试相应地调整查询。
+3. SQLite、SQL Server、PostgreSQL 和 MySQL 之间可能存在轻微的语法差异。Claude 会尝试相应地调整查询。
 
 4. 大结果集可能会被截断以防止内存问题。
+
+5. 视图相关工具 (`list_views`、`describe_view`、`get_view_definition`) 仅支持 SQL Server。
+
+6. 业务洞察工具 (`append_insight`、`list_insights`) 仅支持 SQLite。

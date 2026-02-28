@@ -153,3 +153,33 @@ node dist/src/index.js --sqlserver --server myserver --database mydatabase
    - SQL Server: `INT IDENTITY(1,1)`
 
 在使用 Claude 时,在编写 SQL 查询时请注意这些语法差异。
+
+## 视图支持
+
+SQL Server 适配器支持视图操作,提供以下工具:
+
+### 列出视图
+
+使用 `list_views` 工具获取数据库中所有视图的列表:
+
+```
+数据库中有哪些视图?
+```
+
+### 描述视图结构
+
+使用 `describe_view` 工具获取视图的列信息:
+
+```
+显示 vw_CustomerOrders 视图的结构。
+```
+
+### 获取视图定义
+
+使用 `get_view_definition` 工具获取视图的 CREATE VIEW 语句:
+
+```
+显示 vw_SalesReport 视图的 SQL 定义。
+```
+
+**注意**: 使用 `WITH ENCRYPTION` 创建的视图无法获取其定义。
