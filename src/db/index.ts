@@ -148,4 +148,56 @@ export function supportsViews(): boolean {
         return false;
     }
     return dbAdapter.supportsViews ? dbAdapter.supportsViews() : false;
+}
+
+/**
+ * 获取列出存储过程的查询
+ * 仅 SQL Server 支持
+ */
+export function getListProceduresQuery(): string {
+    if (!dbAdapter) {
+        throw new Error('数据库未初始化');
+    }
+    if (!dbAdapter.getListProceduresQuery) {
+        throw new Error('当前数据库不支持存储过程功能');
+    }
+    return dbAdapter.getListProceduresQuery();
+}
+
+/**
+ * 获取存储过程参数信息的查询
+ * 仅 SQL Server 支持
+ */
+export function getDescribeProcedureQuery(procedureName: string): string {
+    if (!dbAdapter) {
+        throw new Error('数据库未初始化');
+    }
+    if (!dbAdapter.getDescribeProcedureQuery) {
+        throw new Error('当前数据库不支持存储过程功能');
+    }
+    return dbAdapter.getDescribeProcedureQuery(procedureName);
+}
+
+/**
+ * 获取存储过程定义的查询
+ * 仅 SQL Server 支持
+ */
+export function getProcedureDefinitionQuery(procedureName: string): string {
+    if (!dbAdapter) {
+        throw new Error('数据库未初始化');
+    }
+    if (!dbAdapter.getProcedureDefinitionQuery) {
+        throw new Error('当前数据库不支持存储过程功能');
+    }
+    return dbAdapter.getProcedureDefinitionQuery(procedureName);
+}
+
+/**
+ * 检查数据库是否支持存储过程功能
+ */
+export function supportsProcedures(): boolean {
+    if (!dbAdapter) {
+        return false;
+    }
+    return dbAdapter.supportsProcedures ? dbAdapter.supportsProcedures() : false;
 } 
