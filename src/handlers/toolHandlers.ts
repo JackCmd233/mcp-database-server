@@ -2,7 +2,7 @@ import {formatErrorResponse} from '../utils/formatUtils.js';
 
 // 导入所有工具实现
 import {readQuery, writeQuery, exportQuery} from '../tools/queryTools.js';
-import {createTable, alterTable, dropTable, listTables, describeTable, listViews, describeView, getViewDefinition} from '../tools/schemaTools.js';
+import {createTable, alterTable, dropTable, listTables, describeTable, listViews, describeView, getViewDefinition, listProcedures, describeProcedure, getProcedureDefinition} from '../tools/schemaTools.js';
 import {appendInsight, listInsights} from '../tools/insightTools.js';
 
 /**
@@ -507,6 +507,105 @@ export function handleListTools() {
                     idempotentHint: true
                 }
             },
+            {
+                name: "list_procedures",
+                title: "List Procedures",
+                description: "Retrieve a list of all stored procedure names in the current database. " +
+                    "Only works with SQL Server databases. " +
+                    "Returns only procedure names without parameter details. " +
+                    "Use describe_procedure to get detailed parameter information for a specific procedure.",
+                inputSchema: {
+                    type: "object",
+                    properties: {},
+                },
+                outputSchema: {
+                    type: "object",
+                    properties: {
+                        procedures: {
+                            type: "array",
+                            items: {type: "string"},
+                            description: "Array of stored procedure names in the database"
+                        }
+                    }
+                },
+                annotations: {
+                    readOnlyHint: true,
+                    idempotentHint: true
+                }
+            },
+            {
+                name: "describe_procedure",
+                title: "Describe Procedure",
+                description: "Get detailed parameter information about a specific stored procedure. " +
+                    "Only works with SQL Server databases. " +
+                    "Returns parameter name, data type, direction (IN/OUT/INOUT), and default value. " +
+                    "The procedure must exist in the database.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        procedure_name: {
+                            type: "string",
+                            description: "Name of the stored procedure to describe"
+                        },
+                    },
+                    required: ["procedure_name"],
+                },
+                outputSchema: {
+                    type: "object",
+                    properties: {
+                        name: {type: "string", description: "Procedure name"},
+                        type: {type: "string", description: "Always 'procedure'"},
+                        parameters: {
+                            type: "array",
+                            description: "Array of parameter definitions",
+                            items: {
+                                type: "object",
+                                properties: {
+                                    name: {type: "string", description: "Parameter name"},
+                                    type: {type: "string", description: "Data type"},
+                                    direction: {type: "string", enum: ["IN", "OUT", "INOUT"], description: "Parameter direction"},
+                                    default_value: {type: "string", description: "Default value"},
+                                    is_output: {type: "boolean", description: "Whether this is an output parameter"}
+                                }
+                            }
+                        }
+                    }
+                },
+                annotations: {
+                    readOnlyHint: true,
+                    idempotentHint: true
+                }
+            },
+            {
+                name: "get_procedure_definition",
+                title: "Get Procedure Definition",
+                description: "Retrieve the SQL definition (CREATE PROCEDURE statement) of a specific stored procedure. " +
+                    "Only works with SQL Server databases. " +
+                    "Returns the complete CREATE PROCEDURE SQL statement. " +
+                    "Note: Procedures created WITH ENCRYPTION cannot have their definition retrieved.",
+                inputSchema: {
+                    type: "object",
+                    properties: {
+                        procedure_name: {
+                            type: "string",
+                            description: "Name of the stored procedure to get definition for"
+                        },
+                    },
+                    required: ["procedure_name"],
+                },
+                outputSchema: {
+                    type: "object",
+                    properties: {
+                        name: {type: "string", description: "Procedure name"},
+                        definition: {type: "string", description: "CREATE PROCEDURE SQL statement"},
+                        message: {type: "string", description: "Additional information if definition is unavailable"}
+                    }
+                },
+                annotations: {
+                    readOnlyHint: true,
+                    idempotentHint: true
+                }
+            },
         ],
     };
 }
@@ -552,6 +651,15 @@ export async function handleToolCall(name: string, args: any) {
 
             case "get_view_definition":
                 return await getViewDefinition(args.view_name);
+
+            case "list_procedures":
+                return await listProcedures();
+
+            case "describe_procedure":
+                return await describeProcedure(args.procedure_name);
+
+            case "get_procedure_definition":
+                return await getProcedureDefinition(args.procedure_name);
 
             case "append_insight":
                 return await appendInsight(args.insight, args.confirm);
