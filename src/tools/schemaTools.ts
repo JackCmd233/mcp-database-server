@@ -1,4 +1,4 @@
-import {dbAll, dbExec, getListTablesQuery, getDescribeTableQuery, getListViewsQuery, getViewDefinitionQuery, supportsViews} from '../db/index.js';
+import {dbAll, dbExec, getListTablesQuery, getDescribeTableQuery, getListViewsQuery, getViewDefinitionQuery, supportsViews, getListProceduresQuery, getDescribeProcedureQuery, getProcedureDefinitionQuery, supportsProcedures} from '../db/index.js';
 import {formatSuccessResponse} from '../utils/formatUtils.js';
 
 /**
@@ -30,6 +30,20 @@ async function checkObjectExists(objectName: string, objectType: 'table' | 'view
         return objects.some(obj => obj.name === objectName);
     }
     return false;
+}
+
+/**
+ * 检查存储过程是否存在
+ * @param procedureName 存储过程名
+ * @returns 如果存在返回 true，否则返回 false
+ */
+async function checkProcedureExists(procedureName: string): Promise<boolean> {
+    if (!supportsProcedures()) {
+        return false;
+    }
+    const query = getListProceduresQuery();
+    const procedures = await dbAll(query);
+    return procedures.some(proc => proc.name === procedureName);
 }
 
 /**
@@ -337,5 +351,111 @@ export async function getViewDefinition(viewName: string) {
         });
     } catch (error: any) {
         throw new Error(`获取视图定义失败: ${error.message}`);
+    }
+}
+
+/**
+ * 列出数据库中的所有存储过程
+ * 仅支持 SQL Server
+ * @returns 存储过程名数组
+ */
+export async function listProcedures() {
+    try {
+        if (!supportsProcedures()) {
+            throw new Error("存储过程功能仅支持 SQL Server 数据库");
+        }
+
+        const query = getListProceduresQuery();
+        const procedures = await dbAll(query);
+        return formatSuccessResponse(procedures.map((p) => p.name));
+    } catch (error: any) {
+        throw new Error(`列出存储过程失败: ${error.message}`);
+    }
+}
+
+/**
+ * 获取存储过程的参数信息
+ * 仅支持 SQL Server
+ * @param procedureName 存储过程名
+ * @returns 存储过程的参数定义
+ */
+export async function describeProcedure(procedureName: string) {
+    try {
+        if (!procedureName) {
+            throw new Error("存储过程名不能为空");
+        }
+
+        if (!supportsProcedures()) {
+            throw new Error("存储过程功能仅支持 SQL Server 数据库");
+        }
+
+        // 检查存储过程是否存在
+        if (!(await checkProcedureExists(procedureName))) {
+            throw new Error(`存储过程 '${procedureName}' 不存在`);
+        }
+
+        // 获取参数信息
+        const descQuery = getDescribeProcedureQuery(procedureName);
+        const params = await dbAll(descQuery);
+
+        // 格式化参数信息
+        const parameters = params.map((param) => ({
+            name: param.name,
+            type: param.type,
+            direction: param.direction,
+            default_value: param.default_value,
+            is_output: !!param.is_output
+        }));
+
+        return formatSuccessResponse({
+            name: procedureName,
+            type: 'procedure',
+            parameters: parameters
+        });
+    } catch (error: any) {
+        throw new Error(`描述存储过程失败: ${error.message}`);
+    }
+}
+
+/**
+ * 获取存储过程的定义 SQL
+ * 仅支持 SQL Server
+ * 注意: 使用 WITH ENCRYPTION 创建的存储过程无法获取定义
+ * @param procedureName 存储过程名
+ * @returns 存储过程定义 SQL
+ */
+export async function getProcedureDefinition(procedureName: string) {
+    try {
+        if (!procedureName) {
+            throw new Error("存储过程名不能为空");
+        }
+
+        if (!supportsProcedures()) {
+            throw new Error("存储过程功能仅支持 SQL Server 数据库");
+        }
+
+        // 检查存储过程是否存在
+        if (!(await checkProcedureExists(procedureName))) {
+            throw new Error(`存储过程 '${procedureName}' 不存在`);
+        }
+
+        // 获取存储过程定义
+        const defQuery = getProcedureDefinitionQuery(procedureName);
+        const result = await dbAll(defQuery);
+
+        if (result.length === 0 || !result[0].definition) {
+            return formatSuccessResponse({
+                name: procedureName,
+                definition: null,
+                message: "存储过程定义不可用（可能使用 WITH ENCRYPTION 创建）"
+            });
+        }
+
+        return formatSuccessResponse({
+            name: procedureName,
+            definition: result[0].definition
+        });
+    } catch (error: any) {
+        throw new Error(`获取存储过程定义失败: ${error.message}`);
     }
 } 
