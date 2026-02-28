@@ -67,6 +67,32 @@ export interface DbAdapter {
      * 默认返回 false
      */
     supportsViews?(): boolean;
+
+    /**
+     * 获取列出存储过程的数据库特定查询（可选）
+     * 仅 SQL Server 支持
+     */
+    getListProceduresQuery?(): string;
+
+    /**
+     * 获取存储过程参数信息的查询（可选）
+     * 仅 SQL Server 支持
+     * @param procedureName 存储过程名
+     */
+    getDescribeProcedureQuery?(procedureName: string): string;
+
+    /**
+     * 获取存储过程定义的查询（可选）
+     * 仅 SQL Server 支持
+     * @param procedureName 存储过程名
+     */
+    getProcedureDefinitionQuery?(procedureName: string): string;
+
+    /**
+     * 检查数据库是否支持存储过程功能（可选）
+     * 默认返回 false
+     */
+    supportsProcedures?(): boolean;
 }
 
 // 使用动态导入适配器
