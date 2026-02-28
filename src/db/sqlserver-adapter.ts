@@ -357,4 +357,54 @@ export class SqlServerAdapter implements DbAdapter {
     supportsViews(): boolean {
         return true;
     }
+
+    /**
+     * 检查数据库是否支持存储过程功能
+     */
+    supportsProcedures(): boolean {
+        return true;
+    }
+
+    /**
+     * 获取列出存储过程的数据库特定查询
+     */
+    getListProceduresQuery(): string {
+        return "SELECT ROUTINE_NAME as name FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE = 'PROCEDURE' ORDER BY ROUTINE_NAME";
+    }
+
+    /**
+     * 获取存储过程参数信息的查询
+     * @param procedureName 存储过程名
+     */
+    getDescribeProcedureQuery(procedureName: string): string {
+        return `
+      SELECT
+        PARAMETER_NAME as name,
+        DATA_TYPE +
+            CASE
+                WHEN CHARACTER_MAXIMUM_LENGTH IS NOT NULL
+                THEN '(' + CAST(CHARACTER_MAXIMUM_LENGTH AS VARCHAR) + ')'
+                ELSE ''
+            END as type,
+        CASE PARAMETER_MODE
+            WHEN 'IN' THEN 'IN'
+            WHEN 'OUT' THEN 'OUT'
+            WHEN 'INOUT' THEN 'INOUT'
+        END as direction,
+        CASE WHEN PARAMETER_MODE IN ('OUT', 'INOUT') THEN 1 ELSE 0 END as is_output,
+        NULL as default_value
+      FROM INFORMATION_SCHEMA.PARAMETERS
+      WHERE SPECIFIC_NAME = '${procedureName}'
+      ORDER BY ORDINAL_POSITION
+    `;
+    }
+
+    /**
+     * 获取存储过程定义的查询
+     * @param procedureName 存储过程名
+     * 注意: 使用 WITH ENCRYPTION 创建的存储过程无法获取定义
+     */
+    getProcedureDefinitionQuery(procedureName: string): string {
+        return `SELECT ROUTINE_DEFINITION as definition FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE = 'PROCEDURE' AND ROUTINE_NAME = '${procedureName}'`;
+    }
 }
