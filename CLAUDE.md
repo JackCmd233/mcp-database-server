@@ -116,6 +116,12 @@ src/db/adapter.ts (适配器接口层)
 - `getViewDefinitionQuery?(viewName)` - 获取视图定义的查询
 - `supportsViews?()` - 检查是否支持视图功能
 
+**可选方法 (存储过程支持):**
+- `getListProceduresQuery?()` - 获取列出存储过程的查询
+- `getDescribeProcedureQuery?(procedureName)` - 获取存储过程参数信息的查询
+- `getProcedureDefinitionQuery?(procedureName)` - 获取存储过程定义的查询
+- `supportsProcedures?()` - 检查是否支持存储过程功能
+
 ### 数据库适配器
 
 - `src/db/sqlite-adapter.ts` - 使用 `sqlite3` 包,参数占位符 `?`
@@ -217,6 +223,9 @@ node dist/src/index.js /path/to/database.db
 | `list_views` | 列出所有视图 (**仅 SQL Server**) |
 | `describe_view` | 获取视图结构 (**仅 SQL Server**) |
 | `get_view_definition` | 获取视图定义 SQL (**仅 SQL Server**) |
+| `list_procedures` | 列出所有存储过程 (**仅 SQL Server**) |
+| `describe_procedure` | 获取存储过程参数信息 (**仅 SQL Server**) |
+| `get_procedure_definition` | 获取存储过程定义 SQL (**仅 SQL Server**) |
 
 ## MCP 资源列表
 
@@ -249,7 +258,7 @@ node dist/src/index.js /path/to/database.db
 ```
 Claude Code 请求工具列表
     ↓
-MCP Server → handleListTools() → 返回 14 个工具定义
+MCP Server → handleListTools() → 返回 17 个工具定义
     ↓
 Claude Code 调用工具(带参数)
     ↓

@@ -2,6 +2,36 @@ import {DbAdapter} from "./adapter.js";
 import sql from 'mssql';
 
 /**
+ * 验证并转义 SQL Server 标识符名称
+ * 防止 SQL 注入攻击
+ * @param name 标识符名称（表名、视图名、存储过程名等）
+ * @returns 转义后的安全标识符
+ * @throws 如果标识符包含非法字符
+ */
+function escapeIdentifier(name: string): string {
+    // 检查名称是否为空
+    if (!name || typeof name !== 'string') {
+        throw new Error('标识符名称不能为空');
+    }
+
+    // 检查名称长度（SQL Server 限制为 128 字符）
+    if (name.length > 128) {
+        throw new Error('标识符名称长度超过限制（最大 128 字符）');
+    }
+
+    // 检查是否包含危险的 SQL 字符
+    // 只允许字母、数字、下划线和常见的安全字符
+    const validNamePattern = /^[a-zA-Z_][a-zA-Z0-9_@$#]*$/;
+    if (!validNamePattern.test(name)) {
+        throw new Error(`标识符名称包含非法字符: ${name.substring(0, 20)}...`);
+    }
+
+    // 使用方括号转义标识符
+    // 方括号内的右方括号需要转义为两个右方括号
+    return `[${name.replace(/]/g, ']]')}]`;
+}
+
+/**
  * SQL Server 数据库适配器实现
  */
 export class SqlServerAdapter implements DbAdapter {
@@ -301,8 +331,11 @@ export class SqlServerAdapter implements DbAdapter {
     /**
      * 获取描述表或视图的数据库特定查询
      * @param tableName 表名或视图名
+     * @returns SQL 查询字符串
      */
     getDescribeTableQuery(tableName: string): string {
+        // 验证并转义表名，防止 SQL 注入
+        const escapedTableName = escapeIdentifier(tableName);
         return `
       SELECT
         c.COLUMN_NAME as name,
@@ -323,13 +356,13 @@ export class SqlServerAdapter implements DbAdapter {
             SELECT o.object_id
             FROM sys.objects o
             INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
-            WHERE o.name = '${tableName}' AND s.name = c.TABLE_SCHEMA
+            WHERE o.name = ${escapedTableName} AND s.name = c.TABLE_SCHEMA
             AND o.type IN ('U', 'V')
           )
           AND ep.minor_id = c.ORDINAL_POSITION
           AND ep.name = 'MS_Description'
       WHERE
-        c.TABLE_NAME = '${tableName}'
+        c.TABLE_NAME = ${escapedTableName}
       ORDER BY
         c.ORDINAL_POSITION
     `;
@@ -345,10 +378,13 @@ export class SqlServerAdapter implements DbAdapter {
     /**
      * 获取视图定义的数据库特定查询
      * @param viewName 视图名
+     * @returns SQL 查询字符串
      * 注意: 使用 WITH ENCRYPTION 创建的视图无法获取定义
      */
     getViewDefinitionQuery(viewName: string): string {
-        return `SELECT VIEW_DEFINITION as definition FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = '${viewName}'`;
+        // 验证并转义视图名，防止 SQL 注入
+        const escapedViewName = escapeIdentifier(viewName);
+        return `SELECT VIEW_DEFINITION as definition FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = ${escapedViewName}`;
     }
 
     /**
@@ -375,8 +411,11 @@ export class SqlServerAdapter implements DbAdapter {
     /**
      * 获取存储过程参数信息的查询
      * @param procedureName 存储过程名
+     * @returns SQL 查询字符串
      */
     getDescribeProcedureQuery(procedureName: string): string {
+        // 验证并转义存储过程名，防止 SQL 注入
+        const escapedProcedureName = escapeIdentifier(procedureName);
         return `
       SELECT
         PARAMETER_NAME as name,
@@ -390,7 +429,7 @@ export class SqlServerAdapter implements DbAdapter {
         CASE WHEN PARAMETER_MODE IN ('OUT', 'INOUT') THEN 1 ELSE 0 END as is_output,
         NULL as default_value
       FROM INFORMATION_SCHEMA.PARAMETERS
-      WHERE SPECIFIC_NAME = '${procedureName}'
+      WHERE SPECIFIC_NAME = ${escapedProcedureName}
       ORDER BY ORDINAL_POSITION
     `;
     }
@@ -398,9 +437,12 @@ export class SqlServerAdapter implements DbAdapter {
     /**
      * 获取存储过程定义的查询
      * @param procedureName 存储过程名
+     * @returns SQL 查询字符串
      * 注意: 使用 WITH ENCRYPTION 创建的存储过程无法获取定义
      */
     getProcedureDefinitionQuery(procedureName: string): string {
-        return `SELECT ROUTINE_DEFINITION as definition FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE = 'PROCEDURE' AND ROUTINE_NAME = '${procedureName}'`;
+        // 验证并转义存储过程名，防止 SQL 注入
+        const escapedProcedureName = escapeIdentifier(procedureName);
+        return `SELECT ROUTINE_DEFINITION as definition FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE = 'PROCEDURE' AND ROUTINE_NAME = ${escapedProcedureName}`;
     }
 }

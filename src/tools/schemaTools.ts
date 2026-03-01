@@ -180,7 +180,8 @@ export async function dropTable(tableName: string, confirm: boolean) {
 
         // 检查表是否存在
         if (!(await checkObjectExists(tableName, 'table'))) {
-            throw new Error(`表 '${tableName}' 不存在`);
+            // 错误消息不直接包含用户输入，防止日志注入
+            throw new Error("指定的表不存在");
         }
 
         // 删除表
@@ -188,7 +189,7 @@ export async function dropTable(tableName: string, confirm: boolean) {
 
         return formatSuccessResponse({
             success: true,
-            message: `表 '${tableName}' 删除成功`
+            message: "表删除成功"
         });
     } catch (error: any) {
         throw new Error(`删除表失败: ${error.message}`);
@@ -240,7 +241,8 @@ export async function describeTable(tableName: string) {
         } else if (supportsViews() && await checkObjectExists(tableName, 'view')) {
             objectType = 'view';
         } else {
-            throw new Error(supportsViews() ? `表或视图 '${tableName}' 不存在` : `表 '${tableName}' 不存在`);
+            // 错误消息不直接包含用户输入，防止日志注入
+            throw new Error(supportsViews() ? "指定的表或视图不存在" : "指定的表不存在");
         }
 
         // 使用适配器特定的查询来描述表/视图结构
@@ -294,7 +296,8 @@ export async function describeView(viewName: string) {
 
         // 检查视图是否存在
         if (!(await checkObjectExists(viewName, 'view'))) {
-            throw new Error(`视图 '${viewName}' 不存在`);
+            // 错误消息不直接包含用户输入，防止日志注入
+            throw new Error("指定的视图不存在");
         }
 
         // 使用相同的 describe 查询获取视图列结构
@@ -330,7 +333,8 @@ export async function getViewDefinition(viewName: string) {
 
         // 检查视图是否存在
         if (!(await checkObjectExists(viewName, 'view'))) {
-            throw new Error(`视图 '${viewName}' 不存在`);
+            // 错误消息不直接包含用户输入，防止日志注入
+            throw new Error("指定的视图不存在");
         }
 
         // 获取视图定义
@@ -374,18 +378,43 @@ export async function listProcedures() {
 }
 
 /**
+ * 验证存储过程名称格式是否合法
+ * @param name 存储过程名称
+ * @throws 如果名称包含非法字符
+ */
+function validateProcedureNameFormat(name: string): void {
+    // 检查名称是否为空
+    if (!name || typeof name !== 'string') {
+        throw new Error("存储过程名不能为空");
+    }
+
+    // 检查名称长度（SQL Server 限制为 128 字符）
+    if (name.length > 128) {
+        throw new Error("存储过程名称长度超过限制（最大 128 字符）");
+    }
+
+    // 检查是否包含危险的 SQL 字符
+    // 只允许字母、数字、下划线和常见的安全字符
+    const validNamePattern = /^[a-zA-Z_][a-zA-Z0-9_@$#]*$/;
+    if (!validNamePattern.test(name)) {
+        throw new Error("存储过程名称包含非法字符");
+    }
+}
+
+/**
  * 验证存储过程操作的前置条件
  * @param procedureName 存储过程名
  */
 async function validateProcedureOperation(procedureName: string): Promise<void> {
-    if (!procedureName) {
-        throw new Error("存储过程名不能为空");
-    }
+    // 首先验证名称格式，防止恶意输入
+    validateProcedureNameFormat(procedureName);
+
     if (!supportsProcedures()) {
         throw new Error("存储过程功能仅支持 SQL Server 数据库");
     }
     if (!(await checkProcedureExists(procedureName))) {
-        throw new Error(`存储过程 '${procedureName}' 不存在`);
+        // 错误消息不直接包含用户输入，防止日志注入
+        throw new Error("指定的存储过程不存在");
     }
 }
 

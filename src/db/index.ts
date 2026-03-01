@@ -112,7 +112,9 @@ export function getDescribeTableQuery(tableName: string): string {
 
 /**
  * 获取列出视图的数据库特定查询
- * 仅 SQL Server 支持，其他数据库返回空结果
+ * 仅 SQL Server 支持
+ * @returns SQL 查询字符串
+ * @throws 如果数据库不支持视图功能
  */
 export function getListViewsQuery(): string {
     if (!dbAdapter) {
@@ -121,8 +123,8 @@ export function getListViewsQuery(): string {
     if (dbAdapter.getListViewsQuery) {
         return dbAdapter.getListViewsQuery();
     }
-    // 不支持视图的数据库返回空结果查询
-    return "SELECT 1 as name WHERE 1=0";
+    // 统一错误处理策略：不支持视图时抛出明确错误
+    throw new Error("当前数据库不支持视图功能");
 }
 
 /**
@@ -153,6 +155,7 @@ export function supportsViews(): boolean {
 /**
  * 检查存储过程功能是否可用
  * @returns 可用的数据库适配器
+ * @throws 如果数据库未初始化或不支持存储过程功能
  */
 function requireProcedureSupport(): DbAdapter {
     if (!dbAdapter) {
@@ -167,6 +170,8 @@ function requireProcedureSupport(): DbAdapter {
 /**
  * 获取列出存储过程的查询
  * 仅 SQL Server 支持
+ * @returns SQL 查询字符串
+ * @throws 如果数据库不支持存储过程功能
  */
 export function getListProceduresQuery(): string {
     return requireProcedureSupport().getListProceduresQuery!();
@@ -175,6 +180,9 @@ export function getListProceduresQuery(): string {
 /**
  * 获取存储过程参数信息的查询
  * 仅 SQL Server 支持
+ * @param procedureName 存储过程名
+ * @returns SQL 查询字符串
+ * @throws 如果数据库不支持存储过程功能
  */
 export function getDescribeProcedureQuery(procedureName: string): string {
     return requireProcedureSupport().getDescribeProcedureQuery!(procedureName);
@@ -183,6 +191,9 @@ export function getDescribeProcedureQuery(procedureName: string): string {
 /**
  * 获取存储过程定义的查询
  * 仅 SQL Server 支持
+ * @param procedureName 存储过程名
+ * @returns SQL 查询字符串
+ * @throws 如果数据库不支持存储过程功能
  */
 export function getProcedureDefinitionQuery(procedureName: string): string {
     return requireProcedureSupport().getProcedureDefinitionQuery!(procedureName);
@@ -190,6 +201,7 @@ export function getProcedureDefinitionQuery(procedureName: string): string {
 
 /**
  * 检查数据库是否支持存储过程功能
+ * @returns 如果支持返回 true，否则返回 false
  */
 export function supportsProcedures(): boolean {
     if (!dbAdapter) {
