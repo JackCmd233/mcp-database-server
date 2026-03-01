@@ -386,11 +386,7 @@ export class SqlServerAdapter implements DbAdapter {
                 THEN '(' + CAST(CHARACTER_MAXIMUM_LENGTH AS VARCHAR) + ')'
                 ELSE ''
             END as type,
-        CASE PARAMETER_MODE
-            WHEN 'IN' THEN 'IN'
-            WHEN 'OUT' THEN 'OUT'
-            WHEN 'INOUT' THEN 'INOUT'
-        END as direction,
+        PARAMETER_MODE as direction,
         CASE WHEN PARAMETER_MODE IN ('OUT', 'INOUT') THEN 1 ELSE 0 END as is_output,
         NULL as default_value
       FROM INFORMATION_SCHEMA.PARAMETERS

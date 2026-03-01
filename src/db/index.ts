@@ -151,17 +151,25 @@ export function supportsViews(): boolean {
 }
 
 /**
- * 获取列出存储过程的查询
- * 仅 SQL Server 支持
+ * 检查存储过程功能是否可用
+ * @returns 可用的数据库适配器
  */
-export function getListProceduresQuery(): string {
+function requireProcedureSupport(): DbAdapter {
     if (!dbAdapter) {
         throw new Error('数据库未初始化');
     }
     if (!dbAdapter.getListProceduresQuery) {
         throw new Error('当前数据库不支持存储过程功能');
     }
-    return dbAdapter.getListProceduresQuery();
+    return dbAdapter;
+}
+
+/**
+ * 获取列出存储过程的查询
+ * 仅 SQL Server 支持
+ */
+export function getListProceduresQuery(): string {
+    return requireProcedureSupport().getListProceduresQuery!();
 }
 
 /**
@@ -169,13 +177,7 @@ export function getListProceduresQuery(): string {
  * 仅 SQL Server 支持
  */
 export function getDescribeProcedureQuery(procedureName: string): string {
-    if (!dbAdapter) {
-        throw new Error('数据库未初始化');
-    }
-    if (!dbAdapter.getDescribeProcedureQuery) {
-        throw new Error('当前数据库不支持存储过程功能');
-    }
-    return dbAdapter.getDescribeProcedureQuery(procedureName);
+    return requireProcedureSupport().getDescribeProcedureQuery!(procedureName);
 }
 
 /**
@@ -183,13 +185,7 @@ export function getDescribeProcedureQuery(procedureName: string): string {
  * 仅 SQL Server 支持
  */
 export function getProcedureDefinitionQuery(procedureName: string): string {
-    if (!dbAdapter) {
-        throw new Error('数据库未初始化');
-    }
-    if (!dbAdapter.getProcedureDefinitionQuery) {
-        throw new Error('当前数据库不支持存储过程功能');
-    }
-    return dbAdapter.getProcedureDefinitionQuery(procedureName);
+    return requireProcedureSupport().getProcedureDefinitionQuery!(procedureName);
 }
 
 /**

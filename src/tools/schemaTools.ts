@@ -374,6 +374,22 @@ export async function listProcedures() {
 }
 
 /**
+ * 验证存储过程操作的前置条件
+ * @param procedureName 存储过程名
+ */
+async function validateProcedureOperation(procedureName: string): Promise<void> {
+    if (!procedureName) {
+        throw new Error("存储过程名不能为空");
+    }
+    if (!supportsProcedures()) {
+        throw new Error("存储过程功能仅支持 SQL Server 数据库");
+    }
+    if (!(await checkProcedureExists(procedureName))) {
+        throw new Error(`存储过程 '${procedureName}' 不存在`);
+    }
+}
+
+/**
  * 获取存储过程的参数信息
  * 仅支持 SQL Server
  * @param procedureName 存储过程名
@@ -381,18 +397,7 @@ export async function listProcedures() {
  */
 export async function describeProcedure(procedureName: string) {
     try {
-        if (!procedureName) {
-            throw new Error("存储过程名不能为空");
-        }
-
-        if (!supportsProcedures()) {
-            throw new Error("存储过程功能仅支持 SQL Server 数据库");
-        }
-
-        // 检查存储过程是否存在
-        if (!(await checkProcedureExists(procedureName))) {
-            throw new Error(`存储过程 '${procedureName}' 不存在`);
-        }
+        await validateProcedureOperation(procedureName);
 
         // 获取参数信息
         const descQuery = getDescribeProcedureQuery(procedureName);
@@ -426,18 +431,7 @@ export async function describeProcedure(procedureName: string) {
  */
 export async function getProcedureDefinition(procedureName: string) {
     try {
-        if (!procedureName) {
-            throw new Error("存储过程名不能为空");
-        }
-
-        if (!supportsProcedures()) {
-            throw new Error("存储过程功能仅支持 SQL Server 数据库");
-        }
-
-        // 检查存储过程是否存在
-        if (!(await checkProcedureExists(procedureName))) {
-            throw new Error(`存储过程 '${procedureName}' 不存在`);
-        }
+        await validateProcedureOperation(procedureName);
 
         // 获取存储过程定义
         const defQuery = getProcedureDefinitionQuery(procedureName);
