@@ -20,7 +20,6 @@
         "watch": "tsc --watch",
         "start": "node dist/src/index.js",
         "dev": "tsc && node dist/src/index.js",
-        "example": "node examples/example.js",
         "clean": "rimraf dist"
     },
     "dependencies": {
