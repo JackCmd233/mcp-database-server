@@ -1,4 +1,5 @@
 import {DbAdapter} from "./adapter.js";
+import {validateForbiddenOperations} from "./sql-validator.js";
 import pg from 'pg';
 
 /**
@@ -71,6 +72,9 @@ export class PostgresqlAdapter implements DbAdapter {
             throw new Error("数据库未初始化");
         }
 
+        // 验证禁用的操作（防止恶意查询）
+        validateForbiddenOperations(query);
+
         try {
             // PostgreSQL 使用 $1, $2 等作为参数化查询的占位符
             let paramIndex = 0;
@@ -93,6 +97,9 @@ export class PostgresqlAdapter implements DbAdapter {
         if (!this.client) {
             throw new Error("数据库未初始化");
         }
+
+        // 验证禁用的操作
+        validateForbiddenOperations(query);
 
         try {
             // 将 ? 替换为编号参数
@@ -132,6 +139,9 @@ export class PostgresqlAdapter implements DbAdapter {
         if (!this.client) {
             throw new Error("数据库未初始化");
         }
+
+        // 验证禁用的操作
+        validateForbiddenOperations(query);
 
         try {
             await this.client.query(query);

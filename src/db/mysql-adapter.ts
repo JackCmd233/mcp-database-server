@@ -1,4 +1,5 @@
 import {DbAdapter} from "./adapter.js";
+import {validateForbiddenOperations} from "./sql-validator.js";
 import mysql from "mysql2/promise";
 import {Signer} from "@aws-sdk/rds-signer";
 
@@ -139,6 +140,10 @@ export class MysqlAdapter implements DbAdapter {
         if (!this.connection) {
             throw new Error("数据库未初始化");
         }
+
+        // 验证禁用的操作（防止恶意查询）
+        validateForbiddenOperations(query);
+
         try {
             const [rows] = await this.connection.execute(query, params);
             return Array.isArray(rows) ? rows : [];
@@ -154,6 +159,10 @@ export class MysqlAdapter implements DbAdapter {
         if (!this.connection) {
             throw new Error("数据库未初始化");
         }
+
+        // 验证禁用的操作
+        validateForbiddenOperations(query);
+
         try {
             const [result]: any = await this.connection.execute(query, params);
             const changes = result.affectedRows || 0;
@@ -171,6 +180,10 @@ export class MysqlAdapter implements DbAdapter {
         if (!this.connection) {
             throw new Error("数据库未初始化");
         }
+
+        // 验证禁用的操作
+        validateForbiddenOperations(query);
+
         try {
             await this.connection.query(query);
         } catch (err) {

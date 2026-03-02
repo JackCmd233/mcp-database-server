@@ -1,4 +1,5 @@
 import {DbAdapter} from "./adapter.js";
+import {validateForbiddenOperations} from "./sql-validator.js";
 import sql from 'mssql';
 
 /**
@@ -238,6 +239,9 @@ export class SqlServerAdapter implements DbAdapter {
      * @returns 包含查询结果的 Promise
      */
     async all(query: string, params: any[] = []): Promise<any[]> {
+        // 验证禁用的操作（防止恶意查询）
+        validateForbiddenOperations(query);
+
         return this.executeWithRetry(async (pool) => {
             const request = pool.request();
 
@@ -262,6 +266,9 @@ export class SqlServerAdapter implements DbAdapter {
      * @returns 包含结果信息的 Promise
      */
     async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
+        // 验证禁用的操作
+        validateForbiddenOperations(query);
+
         return this.executeWithRetry(async (pool) => {
             const request = pool.request();
 
@@ -303,6 +310,9 @@ export class SqlServerAdapter implements DbAdapter {
      * @returns 执行完成后解析的 Promise
      */
     async exec(query: string): Promise<void> {
+        // 验证禁用的操作
+        validateForbiddenOperations(query);
+
         return this.executeWithRetry(async (pool) => {
             const request = pool.request();
             await request.batch(query);

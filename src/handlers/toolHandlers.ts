@@ -50,7 +50,7 @@ export function handleListTools() {
             {
                 name: "write_query",
                 title: "Write Query",
-                description: "Execute INSERT, UPDATE, DELETE, or TRUNCATE queries to modify database data. " +
+                description: "Execute INSERT, UPDATE, or DELETE queries to modify database data. " +
                     "Returns the number of affected rows. " +
                     "Cannot be used for SELECT queries - use read_query instead. " +
                     "Supports all database types: SQLite, SQL Server, PostgreSQL, MySQL. " +
@@ -60,7 +60,7 @@ export function handleListTools() {
                     properties: {
                         query: {
                             type: "string",
-                            description: "The SQL INSERT/UPDATE/DELETE/TRUNCATE query to execute"
+                            description: "The SQL INSERT/UPDATE/DELETE query to execute"
                         },
                         confirm: {
                             type: "boolean",
@@ -171,9 +171,9 @@ export function handleListTools() {
                 name: "drop_table",
                 title: "Drop Table",
                 description: "Permanently delete a table from the database. " +
-                    "This operation cannot be undone - all data and structure will be lost. " +
-                    "Requires confirm=true to execute as a safety measure. " +
-                    "Validates that the table exists before attempting deletion.",
+                    "This operation has been DISABLED for security reasons. " +
+                    "DROP operations should be handled by DBA at the database level. " +
+                    "Contact your database administrator if you need to delete a table.",
                 inputSchema: {
                     type: "object",
                     properties: {
