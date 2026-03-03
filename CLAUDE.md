@@ -48,7 +48,7 @@ node dist/src/index.js --mysql --host localhost --port 3306 --database mydb --us
 ## 项目信息
 
 - **包名**: `@cmd233/mcp-database-server`
-- **版本**: 参见 package.json (当前: 1.2.0)
+- **版本**: 参见 package.json (当前: 1.3.0)
 - **类型**: ESM 模块 (使用 `NodeNext` 模块系统)
 - **描述**: MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases
 - **NPM 包别名**: `@executeautomation/database-server` (用于全局安装)
@@ -175,6 +175,7 @@ src/
 ├── db/
 │   ├── adapter.ts        # DbAdapter 接口定义和工厂函数
 │   ├── index.ts          # 数据库连接管理和导出
+│   ├── sql-validator.ts  # SQL 操作验证（禁用 DROP/TRUNCATE）
 │   ├── sqlite-adapter.ts
 │   ├── sqlserver-adapter.ts
 │   ├── postgresql-adapter.ts
@@ -211,10 +212,9 @@ node dist/src/index.js /path/to/database.db
 | 工具 | 功能 |
 |------|------|
 | `read_query` | 执行 SELECT 查询 |
-| `write_query` | 执行 INSERT/UPDATE/DELETE/TRUNCATE |
+| `write_query` | 执行 INSERT/UPDATE/DELETE（TRUNCATE 已禁用） |
 | `create_table` | 创建新表 |
 | `alter_table` | 修改表结构 |
-| `drop_table` | 删除表 |
 | `list_tables` | 列出所有表 |
 | `describe_table` | 获取表结构 |
 | `export_query` | 导出查询结果(CSV/JSON) |
@@ -299,10 +299,34 @@ const logger = {
 ### SQL 验证规则
 
 所有 MCP 工具在工具层 (`src/tools/`) 执行严格的 SQL 验证:
-- 验证使用 `query.trim().toLowerCase().startsWith(pattern)` 模式
-- 每个工具只允许特定类型的 SQL 语句
-- 防止用户误操作(如用 `write_query` 执行 SELECT)
+
+**查询类型验证**:
+- `read_query`: 仅允许 `SELECT` 语句
+- `write_query`: 仅允许 `INSERT`/`UPDATE`/`DELETE` 语句
+- `create_table`: 仅允许 `CREATE TABLE` 语句
+- `alter_table`: 仅允许 `ALTER TABLE` 语句
+- `drop_table`: 仅允许 `DROP TABLE` 语句
+
+**禁止操作** (`src/db/sql-validator.ts`):
+- `DROP` 操作: 完全禁用，由 DBA 在数据库层面处理
+- `TRUNCATE` 操作: 完全禁用（不可回滚且不触发触发器）
+
+**验证方式**:
+- 使用 `query.trim().toLowerCase().startsWith(pattern)` 模式匹配
+- 正则检测忽略前导空白和单行注释 (`--`)
 - 验证在数据库操作之前执行,提供清晰的错误消息
+
+### 环境变量配置
+
+**安全最佳实践**:
+- 禁止在代码中硬编码数据库密码或连接字符串
+- 使用环境变量或 `.env` 文件配置敏感信息
+- `.env` 文件必须添加到 `.gitignore` 中
+- 避免将凭据打印到日志中
+
+**配置方式**:
+- CLI 参数传递: `--user username --password password`
+- 环境变量: 项目当前主要通过命令行参数接收凭据
 
 ### 添加新数据库支持
 
@@ -379,7 +403,7 @@ writeQuery("DELETE FROM users WHERE id = 1", true);
 
 ### SQL Server 可空字段检测
 
-`src/db/sqlserver-adapter.ts:189` 已修复可空字段检测逻辑:
+`src/db/sqlserver-adapter.ts` 的 `getDescribeTableQuery()` 方法已修复可空字段检测逻辑:
 
 **错误**:
 ```sql
