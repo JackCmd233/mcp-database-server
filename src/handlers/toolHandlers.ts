@@ -168,45 +168,6 @@ export function handleListTools() {
                 }
             },
             {
-                name: "drop_table",
-                title: "Drop Table",
-                description: "Permanently delete a table from the database. " +
-                    "This operation has been DISABLED for security reasons. " +
-                    "DROP operations should be handled by DBA at the database level. " +
-                    "Contact your database administrator if you need to delete a table.",
-                inputSchema: {
-                    type: "object",
-                    properties: {
-                        table_name: {
-                            type: "string",
-                            description: "Name of the table to delete"
-                        },
-                        confirm: {
-                            type: "boolean",
-                            description: "Must be set to true to confirm table deletion"
-                        },
-                    },
-                    required: ["table_name", "confirm"],
-                },
-                outputSchema: {
-                    type: "object",
-                    properties: {
-                        success: {
-                            type: "boolean",
-                            description: "True if the table was dropped successfully"
-                        },
-                        message: {
-                            type: "string",
-                            description: "Success message with the dropped table name"
-                        }
-                    }
-                },
-                annotations: {
-                    readOnlyHint: false,
-                    destructiveHint: true
-                }
-            },
-            {
                 name: "export_query",
                 title: "Export Query",
                 description: "Execute a SELECT query and export the results in CSV or JSON format. " +
