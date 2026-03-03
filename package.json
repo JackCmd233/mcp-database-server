@@ -1,6 +1,6 @@
 {
     "name": "@cmd233/mcp-database-server",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases (Added stored procedure support and enhanced SQL injection protection)",
     "license": "MIT",
     "author": "cmd233",
