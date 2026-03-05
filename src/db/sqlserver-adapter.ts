@@ -346,6 +346,8 @@ export class SqlServerAdapter implements DbAdapter {
     getDescribeTableQuery(tableName: string): string {
         // 验证并转义表名，防止 SQL 注入
         const escapedTableName = escapeIdentifier(tableName);
+        // 用于字符串比较（不带方括号）
+        const safeTableName = tableName.replace(/'/g, "''");
         return `
       SELECT
         c.COLUMN_NAME as name,
@@ -366,13 +368,13 @@ export class SqlServerAdapter implements DbAdapter {
             SELECT o.object_id
             FROM sys.objects o
             INNER JOIN sys.schemas s ON o.schema_id = s.schema_id
-            WHERE o.name = ${escapedTableName} AND s.name = c.TABLE_SCHEMA
+            WHERE o.name = '${safeTableName}' AND s.name = c.TABLE_SCHEMA
             AND o.type IN ('U', 'V')
           )
           AND ep.minor_id = c.ORDINAL_POSITION
           AND ep.name = 'MS_Description'
       WHERE
-        c.TABLE_NAME = ${escapedTableName}
+        c.TABLE_NAME = '${safeTableName}'
       ORDER BY
         c.ORDINAL_POSITION
     `;
