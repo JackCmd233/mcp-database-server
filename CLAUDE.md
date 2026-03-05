@@ -48,7 +48,7 @@ node dist/src/index.js --mysql --host localhost --port 3306 --database mydb --us
 ## 项目信息
 
 - **包名**: `@cmd233/mcp-database-server`
-- **版本**: 参见 package.json (当前: 1.3.0)
+- **版本**: 参见 package.json (当前: 1.4.1)
 - **类型**: ESM 模块 (使用 `NodeNext` 模块系统)
 - **描述**: MCP server for interacting with SQLite, SQL Server, PostgreSQL and MySQL databases
 - **NPM 包别名**: `@executeautomation/database-server` (用于全局安装)
@@ -227,6 +227,8 @@ node dist/src/index.js /path/to/database.db
 | `describe_procedure` | 获取存储过程参数信息 (**仅 SQL Server**) |
 | `get_procedure_definition` | 获取存储过程定义 SQL (**仅 SQL Server**) |
 
+**注意**: `drop_table` 工具已在 v1.4.0 移除。DROP 操作应由 DBA 在数据库层面处理。
+
 ## MCP 资源列表
 
 服务器提供动态资源以访问数据库表结构:
@@ -258,7 +260,7 @@ node dist/src/index.js /path/to/database.db
 ```
 Claude Code 请求工具列表
     ↓
-MCP Server → handleListTools() → 返回 17 个工具定义
+MCP Server → handleListTools() → 返回 16 个工具定义
     ↓
 Claude Code 调用工具(带参数)
     ↓
@@ -305,7 +307,6 @@ const logger = {
 - `write_query`: 仅允许 `INSERT`/`UPDATE`/`DELETE` 语句
 - `create_table`: 仅允许 `CREATE TABLE` 语句
 - `alter_table`: 仅允许 `ALTER TABLE` 语句
-- `drop_table`: 仅允许 `DROP TABLE` 语句
 
 **禁止操作** (`src/db/sql-validator.ts`):
 - `DROP` 操作: 完全禁用，由 DBA 在数据库层面处理
@@ -372,7 +373,7 @@ const logger = {
 
 ## 安全确认机制
 
-数据修改工具（`write_query`、`create_table`、`alter_table`、`drop_table`、`append_insight`）需要 `confirm=true` 参数才能执行：
+数据修改工具（`write_query`、`create_table`、`alter_table`、`append_insight`）需要 `confirm=true` 参数才能执行：
 
 1. **默认调用**（`confirm` 未设置或 `false`）：返回提示消息，不执行操作
 2. **确认调用**（`confirm=true`）：执行实际操作

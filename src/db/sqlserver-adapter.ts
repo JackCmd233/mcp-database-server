@@ -344,9 +344,9 @@ export class SqlServerAdapter implements DbAdapter {
      * @returns SQL 查询字符串
      */
     getDescribeTableQuery(tableName: string): string {
-        // 验证并转义表名，防止 SQL 注入
-        const escapedTableName = escapeIdentifier(tableName);
-        // 用于字符串比较（不带方括号）
+        // 验证表名合法性（白名单验证，非法表名会抛出异常）
+        escapeIdentifier(tableName);
+        // 用于字符串比较的单引号转义
         const safeTableName = tableName.replace(/'/g, "''");
         return `
       SELECT

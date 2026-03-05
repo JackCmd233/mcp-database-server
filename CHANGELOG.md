@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-06
+
+### Changed
+- **移除 `drop_table` 工具**: DROP 操作已被完全禁用，此类操作应由 DBA 在数据库层面处理
+  - 工具定义已从 MCP 工具列表中移除
+  - 保留内部处理逻辑以返回友好的禁用消息
+
+### Fixed
+- **修复 SQL Server 表名注入漏洞**: `getDescribeTableQuery` 方法新增表名验证，防止 SQL 注入攻击
+
+## [1.3.0] - 2026-03-03
+
+### Added
+- **SQL Server 存储过程支持**: 新增三个存储过程相关工具
+  - `list_procedures`: 列出数据库中所有存储过程
+  - `describe_procedure`: 获取存储过程的参数信息
+  - `get_procedure_definition`: 获取存储过程的 SQL 定义语句
+- **增强 SQL 注入防护**: 所有数据库适配器的标识符（表名、视图名、存储过程名）都经过严格验证
+
+### Security
+- 添加 `escapeIdentifier()` 函数进行标识符白名单验证
+- 只允许符合 `[a-zA-Z_][a-zA-Z0-9_@$#]*` 模式的标识符
+
 ## [1.2.0] - 2025-02-28
 
 ### Added
