@@ -290,7 +290,6 @@ MCP 数据库服务器提供以下可供 Claude 使用的工具:
 | `write_query` | 执行 INSERT、UPDATE、DELETE 或 TRUNCATE 查询 | `query`: SQL 修改语句<br>`confirm`: 安全标志(必须为 true) |
 | `create_table` | 在数据库中创建新表 | `query`: CREATE TABLE 语句<br>`confirm`: 安全标志(必须为 true) |
 | `alter_table` | 修改现有表架构 | `query`: ALTER TABLE 语句<br>`confirm`: 安全标志(必须为 true) |
-| `drop_table` | 从数据库中删除表 | `table_name`: 表名<br>`confirm`: 安全标志(必须为 true) |
 | `list_tables` | 获取所有表的列表 | 无 |
 | `describe_table` | 查看表的架构信息 | `table_name`: 表名 |
 | `export_query` | 将查询结果导出为 CSV/JSON | `query`: SQL SELECT 语句<br>`format`: "csv" 或 "json" |
